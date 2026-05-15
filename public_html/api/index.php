@@ -1,4 +1,44 @@
 <?php
+// Buffer output so stray PHP warnings never corrupt the JSON body.
+ob_start();
+
+// Prevent PHP from writing HTML error output into the response.
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+
+// Convert warnings/notices into exceptions so they surface in the JSON.
+set_error_handler(function(int $errno, string $errstr, string $errfile, int $errline): bool {
+    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+});
+
+// Catch any uncaught exception (including the one above) and return JSON.
+set_exception_handler(function(Throwable $e): void {
+    ob_clean();
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'error' => $e->getMessage(),
+        'file'  => basename($e->getFile()),
+        'line'  => $e->getLine(),
+    ]);
+    exit;
+});
+
+// Catch fatal errors (syntax errors, missing files) that bypass the above.
+register_shutdown_function(function(): void {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        ob_clean();
+        http_response_code(500);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'error' => $err['message'],
+            'file'  => basename($err['file']),
+            'line'  => $err['line'],
+        ]);
+    }
+});
+
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/db.php';
 
