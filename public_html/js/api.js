@@ -33,5 +33,14 @@ const API = (() => {
             create:      (data)  => request('POST',   '/metrics', data),
             remove:      (id)    => request('DELETE', '/metrics/' + id),
         },
+        // Direct browser → Open Food Facts, not proxied through our backend
+        OFF: {
+            search: (q, page = 1) => fetch(
+                'https://world.openfoodfacts.org/cgi/search.pl' +
+                '?search_terms=' + encodeURIComponent(q) +
+                '&json=true&page_size=20&page=' + page +
+                '&fields=product_name,brands,nutriments,serving_size'
+            ).then(r => { if (!r.ok) throw new Error('OFF failed'); return r.json(); }),
+        },
     };
 })();

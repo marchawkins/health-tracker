@@ -129,7 +129,7 @@ switch ($method) {
             isset($data['fiber_g'])    ? (float)$data['fiber_g']    : null,
             isset($data['sodium_mg'])  ? (float)$data['sodium_mg']  : null,
             isset($data['notes'])      ? trim($data['notes'])        : null,
-            'manual',
+            ($data['source'] ?? '') === 'openfoodfacts' ? 'openfoodfacts' : 'manual',
         ]);
 
         $insertId = (int)$db->lastInsertId();

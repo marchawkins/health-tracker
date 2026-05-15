@@ -116,6 +116,7 @@ const FoodLogView = (() => {
                         <label for="ff-notes">Notes</label>
                         <textarea id="ff-notes" name="notes" rows="2" placeholder="Optional"></textarea>
                     </div>
+                    <input type="hidden" name="source" value="manual">
                     <button type="submit" class="btn btn-primary btn-block">Add Food</button>
                 </form>
             </div>
@@ -195,6 +196,7 @@ const FoodLogView = (() => {
             fiber_g:      form.fiber_g.value    ? parseFloat(form.fiber_g.value)    : null,
             sodium_mg:    form.sodium_mg.value  ? parseFloat(form.sodium_mg.value)  : null,
             notes:        form.notes.value.trim() || null,
+            source:       form.source ? form.source.value : 'manual',
         };
 
         try {
@@ -338,6 +340,7 @@ const FoodLogView = (() => {
                         <label for="ff-notes">Notes</label>
                         <textarea id="ff-notes" name="notes" rows="2">${escHtml(entry.notes || '')}</textarea>
                     </div>
+                    <input type="hidden" name="source" value="${escHtml(entry.source || 'manual')}">
                     <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
                     <button type="button" id="btn-delete-entry" class="btn btn-danger btn-block" style="margin-top:8px;">Delete Entry</button>
                 </form>
@@ -392,74 +395,220 @@ const FoodLogView = (() => {
     }
 
     function setupAutocomplete(inputEl) {
-        let debounceTimer = null;
-        let dropdownEl    = null;
+        let gen          = 0;
+        let localTimer   = null;
+        let offTimer     = null;
+        let dropdownEl   = null;
+        let localResults = [];
+        let offResults   = [];
+        let offPage      = 0;
+        let offFetching  = false;
+        let offDone      = false;
 
+        const OFF_PAGE_SIZE = 20;
         const wrapper = inputEl.closest('.form-row');
         wrapper.style.position = 'relative';
 
-        function buildDropdown(items) {
-            removeDropdown();
-            if (!items.length) return;
+        function createItem(item) {
+            const li = document.createElement('li');
+            li.className = 'autocomplete-item';
+            const metaParts = [];
+            if (item.calories != null) metaParts.push(Math.round(item.calories) + ' cal');
+            if (item.serving_size) metaParts.push(escHtml(item.serving_size));
+            li.innerHTML =
+                '<span class="ac-icon">' + (item._icon || '🔍') + '</span>' +
+                '<span class="ac-content">' +
+                    '<span class="ac-name">' + escHtml(item.food_name) + '</span>' +
+                    (item.brand ? '<span class="ac-brand">' + escHtml(item.brand) + '</span>' : '') +
+                    (metaParts.length ? '<span class="ac-meta">' + metaParts.join(' &middot; ') + '</span>' : '') +
+                '</span>';
+            li.addEventListener('mousedown', e => e.preventDefault());
+            li.addEventListener('click', () => { fillFromSuggestion(item); removeDropdown(); });
+            return li;
+        }
 
+        function createFooterEl() {
+            const li = document.createElement('li');
+            li.className = 'ac-footer';
+            li.addEventListener('mousedown', e => e.preventDefault());
+            if (offFetching) {
+                const spinner = document.createElement('span');
+                spinner.className = 'ac-spinner';
+                li.appendChild(spinner);
+            } else if (offDone) {
+                li.classList.add('ac-end');
+                li.textContent = 'No more results';
+            }
+            return li;
+        }
+
+        function buildDropdown() {
+            const allItems = [
+                ...localResults.map(r => ({ ...r, _icon: '🕐' })),
+                ...offResults,
+            ];
+            const hasContent = allItems.length > 0 || offFetching;
+
+            if (!hasContent) { removeDropdown(); return; }
+
+            removeDropdown();
             dropdownEl = document.createElement('ul');
             dropdownEl.className = 'autocomplete-list';
 
-            items.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'autocomplete-item';
-                li.innerHTML =
-                    '<span class="ac-name">'  + escHtml(item.food_name) + '</span>' +
-                    '<span class="ac-meta">'  + Math.round(item.calories) + ' cal' +
-                    (item.serving_size ? ' &middot; ' + escHtml(item.serving_size) : '') +
-                    '</span>';
+            allItems.forEach(item => dropdownEl.appendChild(createItem(item)));
+            if (offFetching || offDone) dropdownEl.appendChild(createFooterEl());
 
-                // preventDefault stops the input losing focus before click fires
-                li.addEventListener('mousedown', e => e.preventDefault());
-                li.addEventListener('click', () => {
-                    fillFromSuggestion(item);
-                    removeDropdown();
-                });
-                dropdownEl.appendChild(li);
-            });
-
+            dropdownEl.addEventListener('scroll', onDropdownScroll);
             wrapper.appendChild(dropdownEl);
+        }
+
+        function refreshFooter() {
+            if (!dropdownEl) return;
+            const old = dropdownEl.querySelector('.ac-footer');
+            if (old) old.remove();
+            if (offFetching || offDone) dropdownEl.appendChild(createFooterEl());
+        }
+
+        function appendItems(newItems) {
+            if (!dropdownEl) return;
+            const old = dropdownEl.querySelector('.ac-footer');
+            if (old) old.remove();
+            newItems.forEach(item => dropdownEl.appendChild(createItem(item)));
+            if (offFetching || offDone) dropdownEl.appendChild(createFooterEl());
         }
 
         function removeDropdown() {
             if (dropdownEl) { dropdownEl.remove(); dropdownEl = null; }
         }
 
+        function onDropdownScroll() {
+            if (!dropdownEl || offFetching || offDone) return;
+            if (dropdownEl.scrollTop + dropdownEl.clientHeight >= dropdownEl.scrollHeight - 60) {
+                fetchNextOffPage();
+            }
+        }
+
+        async function fetchNextOffPage() {
+            if (offFetching || offDone) return;
+            offFetching    = true;
+            const myGen    = gen;
+            const nextPage = offPage + 1;
+            const q        = inputEl.value.trim();
+
+            refreshFooter();
+
+            try {
+                const data = await API.OFF.search(q, nextPage);
+                if (gen !== myGen) return;
+
+                const products = (data.products || []).filter(p => p.product_name);
+                offPage     = nextPage;
+                offFetching = false;
+                if (products.length < OFF_PAGE_SIZE) offDone = true;
+
+                const newItems = products.map(mapOffProduct);
+                offResults = offResults.concat(newItems);
+                appendItems(newItems);
+            } catch (_) {
+                if (gen !== myGen) return;
+                offFetching = false;
+                offDone     = true;
+                refreshFooter();
+            }
+        }
+
+        function mapOffProduct(p) {
+            const n = p.nutriments || {};
+            return {
+                food_name:    p.product_name,
+                brand:        p.brands        || null,
+                serving_size: p.serving_size  || null,
+                calories:     n['energy-kcal_100g']  != null ? Math.round(parseFloat(n['energy-kcal_100g']))  : null,
+                protein_g:    n['proteins_100g']      != null ? parseFloat(n['proteins_100g'])                 : null,
+                carbs_g:      n['carbohydrates_100g'] != null ? parseFloat(n['carbohydrates_100g'])            : null,
+                fat_g:        n['fat_100g']           != null ? parseFloat(n['fat_100g'])                      : null,
+                source:       'openfoodfacts',
+                _icon:        '🔍',
+            };
+        }
+
         function fillFromSuggestion(item) {
             const form = inputEl.closest('form');
             inputEl.value           = item.food_name;
-            form.serving_size.value = item.serving_size || '';
-            form.calories.value     = item.calories     || '';
-            form.protein_g.value    = item.protein_g    || '';
-            form.carbs_g.value      = item.carbs_g      || '';
-            form.fat_g.value        = item.fat_g        || '';
+            form.serving_size.value = item.serving_size != null ? item.serving_size : '';
+            form.calories.value     = item.calories     != null ? item.calories     : '';
+            form.protein_g.value    = item.protein_g    != null ? item.protein_g    : '';
+            form.carbs_g.value      = item.carbs_g      != null ? item.carbs_g      : '';
+            form.fat_g.value        = item.fat_g        != null ? item.fat_g        : '';
+            if (form.source) form.source.value = item.source || 'manual';
             form.calories.focus();
         }
 
         inputEl.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            const q = inputEl.value.trim();
-            if (q.length < 2) { removeDropdown(); return; }
-            debounceTimer = setTimeout(async () => {
-                try {
-                    const items = await API.foods.autocomplete(q);
-                    buildDropdown(items);
-                } catch (_) {
-                    removeDropdown();
-                }
+            clearTimeout(localTimer);
+            clearTimeout(offTimer);
+            const myGen = ++gen;
+            const q     = inputEl.value.trim();
+
+            if (q.length < 2) {
+                localResults = [];
+                offResults   = [];
+                offPage      = 0;
+                offFetching  = false;
+                offDone      = false;
+                removeDropdown();
+                return;
+            }
+
+            if (q.length < 4) {
+                offResults  = [];
+                offPage     = 0;
+                offFetching = false;
+                offDone     = false;
+            }
+
+            // Local history: 2+ chars, 200ms debounce, max 3 results
+            localTimer = setTimeout(async () => {
+                try { localResults = (await API.foods.autocomplete(q)).slice(0, 3); }
+                catch (_) { localResults = []; }
+                if (gen === myGen) buildDropdown();
             }, 200);
+
+            // OFF: 4+ chars, 500ms debounce, page 1 — resets all OFF state
+            if (q.length >= 4) {
+                offTimer = setTimeout(async () => {
+                    if (gen !== myGen) return;
+
+                    offResults  = [];
+                    offPage     = 0;
+                    offFetching = true;
+                    offDone     = false;
+                    buildDropdown(); // show local results + spinner while fetching
+
+                    try {
+                        const data = await API.OFF.search(q, 1);
+                        if (gen !== myGen) return;
+
+                        const products = (data.products || []).filter(p => p.product_name);
+                        offPage     = 1;
+                        offFetching = false;
+                        if (products.length < OFF_PAGE_SIZE) offDone = true;
+
+                        offResults = products.map(mapOffProduct);
+                        buildDropdown();
+                    } catch (_) {
+                        if (gen !== myGen) return;
+                        offFetching = false;
+                        offDone     = true;
+                        buildDropdown();
+                    }
+                }, 500);
+            }
         });
 
-        // Short delay lets the mousedown+click on a list item fire first
         inputEl.addEventListener('blur', () => setTimeout(removeDropdown, 150));
 
         function outsideClickHandler(e) {
-            // Self-remove if the view has been torn down
             if (!document.contains(inputEl)) {
                 document.removeEventListener('click', outsideClickHandler);
                 return;
