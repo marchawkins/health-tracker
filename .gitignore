@@ -1,2 +1,5 @@
 public_html/.DS_Store
 .DS_Store
+
+# Database credentials — never commit
+config/db.php
