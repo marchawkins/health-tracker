@@ -39,6 +39,7 @@ const API = (() => {
                 'https://world.openfoodfacts.org/cgi/search.pl' +
                 '?search_terms=' + encodeURIComponent(q) +
                 '&json=true&page_size=20&page=' + page +
+                '&sort_by=unique_scans_n&countries_tags=en:united-states' +
                 '&fields=product_name,brands,nutriments,serving_size'
             ).then(r => { if (!r.ok) throw new Error('OFF failed'); return r.json(); }),
         },
