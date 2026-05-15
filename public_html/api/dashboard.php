@@ -21,41 +21,17 @@ $stmt = $db->prepare(
 $stmt->execute([CURRENT_USER_ID, $date]);
 $food_summary = $stmt->fetch();
 
-// Individual entries for the requested day
+// Individual entries for the requested day, ordered by meal sequence then time
 $stmt = $db->prepare(
     'SELECT * FROM food_logs
      WHERE user_id = ? AND meal_date = ?
-     ORDER BY logged_at ASC'
+     ORDER BY FIELD(meal_type, \'breakfast\', \'lunch\', \'dinner\', \'snack\'), logged_at ASC'
 );
 $stmt->execute([CURRENT_USER_ID, $date]);
 $food_entries = $stmt->fetchAll();
 
-// Most recent weight entry
-$stmt = $db->prepare(
-    'SELECT * FROM weight_logs WHERE user_id = ? ORDER BY logged_at DESC LIMIT 1'
-);
-$stmt->execute([CURRENT_USER_ID]);
-$latest_weight = $stmt->fetch() ?: null;
-
-// Daily averages for the weight trend chart (last 90 entries by day)
-$stmt = $db->prepare(
-    'SELECT
-        DATE(logged_at)  AS log_date,
-        AVG(weight)      AS weight,
-        MAX(unit)        AS unit
-     FROM weight_logs
-     WHERE user_id = ?
-     GROUP BY DATE(logged_at)
-     ORDER BY log_date ASC
-     LIMIT 90'
-);
-$stmt->execute([CURRENT_USER_ID]);
-$weight_trend = $stmt->fetchAll();
-
 json_response([
-    'date'          => $date,
-    'food_summary'  => $food_summary,
-    'food_entries'  => $food_entries,
-    'latest_weight' => $latest_weight,
-    'weight_trend'  => $weight_trend,
+    'date'         => $date,
+    'food_summary' => $food_summary,
+    'food_entries' => $food_entries,
 ]);

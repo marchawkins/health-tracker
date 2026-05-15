@@ -98,27 +98,7 @@ const DashboardView = (() => {
                 <a href="#food?date=${data.date}" class="btn btn-secondary btn-block" style="margin-top:12px;">+ Add Food</a>
             </div>
 
-            <div class="card">
-                <h2>Weight</h2>
-                ${data.latest_weight
-                    ? `<div class="weight-display">${data.latest_weight.weight} ${data.latest_weight.unit}</div>
-                       <p class="text-muted">Logged ${fmtDateLabel(data.latest_weight.logged_at.slice(0,10))}</p>`
-                    : '<p class="text-muted">No weight logged yet.</p>'
-                }
-                <a href="#weight" class="btn btn-secondary btn-block" style="margin-top:12px;">+ Log Weight</a>
-            </div>
-
-            <div class="card">
-                <h2>Weight Trend</h2>
-                <canvas id="weight-chart" style="width:100%;display:block;"></canvas>
-            </div>
         `;
-
-        // Draw chart after layout settles
-        requestAnimationFrame(() => {
-            const canvas = document.getElementById('weight-chart');
-            if (canvas) WeightChart.draw(canvas, data.weight_trend);
-        });
     }
 
     function renderFoodEntries(entries) {
@@ -129,7 +109,10 @@ const DashboardView = (() => {
                     <span class="food-name">${escHtml(e.food_name)}</span>
                     <span class="food-meta">${e.meal_type}${e.serving_size ? ' &middot; ' + escHtml(e.serving_size) : ''}</span>
                 </div>
-                <span class="food-cal">${Math.round(e.calories)}</span>
+                <div class="food-entry-right">
+                    <span class="food-cal">${Math.round(e.calories)}</span>
+                    <a href="#food?edit=${e.id}" class="btn-edit" aria-label="Edit entry">✏️</a>
+                </div>
             </div>
         `).join('');
     }

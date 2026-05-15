@@ -26,6 +26,12 @@ const FoodLogView = (() => {
         return m ? m[1] : todayStr();
     }
 
+    // Pull ?edit= from the current hash (e.g. #food?edit=42)
+    function editIdFromHash() {
+        const m = window.location.hash.match(/[?&]edit=(\d+)/);
+        return m ? parseInt(m[1], 10) : null;
+    }
+
     function fmtShort(dateStr) {
         const d = new Date(dateStr + 'T00:00:00');
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -46,6 +52,12 @@ const FoodLogView = (() => {
     }
 
     async function render(container) {
+        const editId = editIdFromHash();
+        if (editId) {
+            await renderEditMode(container, editId);
+            return;
+        }
+
         const initDate = dateFromHash();
         listDate = initDate;
 
@@ -258,6 +270,125 @@ const FoodLogView = (() => {
         } catch (err) {
             Toast.error('Delete failed: ' + err.message);
         }
+    }
+
+    async function renderEditMode(container, editId) {
+        container.innerHTML = '<div class="card"><div class="loading">Loading&hellip;</div></div>';
+
+        let entry;
+        try {
+            entry = await API.foods.get(editId);
+        } catch (err) {
+            container.innerHTML = `<div class="card"><p class="error">Failed to load entry: ${escHtml(err.message)}</p></div>`;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="card">
+                <h2>Edit Food Entry</h2>
+                <form id="food-form" novalidate>
+                    <div class="form-row">
+                        <label for="ff-date">Date</label>
+                        <input type="date" id="ff-date" name="meal_date" value="${escHtml(entry.meal_date)}" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="ff-meal">Meal</label>
+                        <select id="ff-meal" name="meal_type">
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                            <option value="snack">Snack</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="ff-name">Food Name *</label>
+                        <input type="text" id="ff-name" name="food_name" value="${escHtml(entry.food_name)}" required autocomplete="off">
+                    </div>
+                    <div class="form-row">
+                        <label for="ff-serving">Serving Size</label>
+                        <input type="text" id="ff-serving" name="serving_size" value="${escHtml(entry.serving_size || '')}">
+                    </div>
+                    <div class="form-row">
+                        <label for="ff-cal">Calories *</label>
+                        <input type="number" id="ff-cal" name="calories" min="0" step="1" value="${entry.calories || ''}" required inputmode="decimal">
+                    </div>
+                    <div class="macro-inputs">
+                        <div class="form-row">
+                            <label for="ff-protein">Protein (g)</label>
+                            <input type="number" id="ff-protein" name="protein_g" min="0" step="0.1" value="${entry.protein_g || ''}" inputmode="decimal">
+                        </div>
+                        <div class="form-row">
+                            <label for="ff-carbs">Carbs (g)</label>
+                            <input type="number" id="ff-carbs" name="carbs_g" min="0" step="0.1" value="${entry.carbs_g || ''}" inputmode="decimal">
+                        </div>
+                        <div class="form-row">
+                            <label for="ff-fat">Fat (g)</label>
+                            <input type="number" id="ff-fat" name="fat_g" min="0" step="0.1" value="${entry.fat_g || ''}" inputmode="decimal">
+                        </div>
+                        <div class="form-row">
+                            <label for="ff-fiber">Fiber (g)</label>
+                            <input type="number" id="ff-fiber" name="fiber_g" min="0" step="0.1" value="${entry.fiber_g || ''}" inputmode="decimal">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="ff-sodium">Sodium (mg)</label>
+                        <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" value="${entry.sodium_mg || ''}" inputmode="decimal">
+                    </div>
+                    <div class="form-row">
+                        <label for="ff-notes">Notes</label>
+                        <textarea id="ff-notes" name="notes" rows="2">${escHtml(entry.notes || '')}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+                    <button type="button" id="btn-delete-entry" class="btn btn-danger btn-block" style="margin-top:8px;">Delete Entry</button>
+                </form>
+            </div>
+        `;
+
+        document.getElementById('ff-meal').value = entry.meal_type || 'snack';
+        setupAutocomplete(document.getElementById('ff-name'));
+
+        document.getElementById('food-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const btn  = form.querySelector('[type="submit"]');
+            btn.disabled    = true;
+            btn.textContent = 'Saving…';
+
+            const data = {
+                meal_date:    form.meal_date.value,
+                meal_type:    form.meal_type.value,
+                food_name:    form.food_name.value.trim(),
+                serving_size: form.serving_size.value.trim() || null,
+                calories:     parseFloat(form.calories.value),
+                protein_g:    form.protein_g.value  ? parseFloat(form.protein_g.value)  : null,
+                carbs_g:      form.carbs_g.value    ? parseFloat(form.carbs_g.value)    : null,
+                fat_g:        form.fat_g.value      ? parseFloat(form.fat_g.value)      : null,
+                fiber_g:      form.fiber_g.value    ? parseFloat(form.fiber_g.value)    : null,
+                sodium_mg:    form.sodium_mg.value  ? parseFloat(form.sodium_mg.value)  : null,
+                notes:        form.notes.value.trim() || null,
+            };
+
+            try {
+                await API.foods.update(editId, data);
+                Toast.success('Entry updated!');
+                window.location.hash = '#dashboard';
+            } catch (err) {
+                Toast.error('Failed to save: ' + err.message);
+                btn.disabled    = false;
+                btn.textContent = 'Save Changes';
+            }
+        });
+
+        document.getElementById('btn-delete-entry').addEventListener('click', async () => {
+            if (!confirm('Delete this entry?')) return;
+            try {
+                await API.foods.remove(editId);
+                Toast.success('Entry deleted');
+                window.location.hash = '#dashboard';
+            } catch (err) {
+                Toast.error('Delete failed: ' + err.message);
+            }
+        });
     }
 
     function setupAutocomplete(inputEl) {
