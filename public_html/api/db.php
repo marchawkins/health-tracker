@@ -1,9 +1,22 @@
 <?php
-$config_path = __DIR__ . '/../../../../config/db.php';
+// Local dev (MAMP): config/ sits two levels above public_html/api/
+// Hostinger:        config/ sits four levels above public_html/api/
+$candidates = [
+    __DIR__ . '/../../config/db.php',
+    __DIR__ . '/../../../../config/db.php',
+];
 
-if (!file_exists($config_path)) {
+$config_path = null;
+foreach ($candidates as $path) {
+    if (file_exists($path)) {
+        $config_path = $path;
+        break;
+    }
+}
+
+if ($config_path === null) {
     throw new RuntimeException(
-        'config/db.php not found. Looked in: ' . realpath(__DIR__ . '/../../../..') . '/config/db.php'
+        'config/db.php not found. Searched: ' . implode(', ', array_map('realpath', array_map('dirname', $candidates)))
     );
 }
 
