@@ -1,5 +1,31 @@
 <?php
 // $resource, $sub, $method set by index.php
+
+// GET /api/foods/autocomplete?q=chicken
+if ($method === 'GET' && $sub === 'autocomplete') {
+    $q = trim($_GET['q'] ?? '');
+    if (strlen($q) < 2) json_response([]);
+
+    $db   = get_db();
+    $stmt = $db->prepare(
+        'SELECT
+            food_name,
+            ANY_VALUE(serving_size)    AS serving_size,
+            ROUND(AVG(calories),  1)   AS calories,
+            ROUND(AVG(protein_g), 2)   AS protein_g,
+            ROUND(AVG(carbs_g),   2)   AS carbs_g,
+            ROUND(AVG(fat_g),     2)   AS fat_g,
+            COUNT(*)                   AS log_count
+         FROM food_logs
+         WHERE user_id = ? AND food_name LIKE ?
+         GROUP BY food_name
+         ORDER BY log_count DESC
+         LIMIT 7'
+    );
+    $stmt->execute([CURRENT_USER_ID, '%' . $q . '%']);
+    json_response($stmt->fetchAll());
+}
+
 $id = (isset($sub) && is_numeric($sub)) ? (int)$sub : null;
 
 switch ($method) {

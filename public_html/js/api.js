@@ -15,9 +15,10 @@ const API = (() => {
             get: (date) => request('GET', '/dashboard' + (date ? '?date=' + date : '')),
         },
         foods: {
-            list:   (date)  => request('GET',    '/foods?date=' + date),
-            create: (data)  => request('POST',   '/foods', data),
-            remove: (id)    => request('DELETE', '/foods/' + id),
+            list:        (date) => request('GET',    '/foods?date=' + date),
+            autocomplete: (q)   => request('GET',    '/foods/autocomplete?q=' + encodeURIComponent(q)),
+            create:      (data) => request('POST',   '/foods', data),
+            remove:       (id)  => request('DELETE', '/foods/' + id),
         },
         weight: {
             list:   (limit) => request('GET',    '/weight?limit=' + (limit || 30)),

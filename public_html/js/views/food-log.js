@@ -124,6 +124,7 @@ const FoodLogView = (() => {
         document.getElementById('ff-meal').value = guessMealType();
 
         document.getElementById('food-form').addEventListener('submit', handleSubmit);
+        setupAutocomplete(document.getElementById('ff-name'));
 
         document.getElementById('fl-date').addEventListener('change', e => {
             listDate = e.target.value;
@@ -257,6 +258,84 @@ const FoodLogView = (() => {
         } catch (err) {
             Toast.error('Delete failed: ' + err.message);
         }
+    }
+
+    function setupAutocomplete(inputEl) {
+        let debounceTimer = null;
+        let dropdownEl    = null;
+
+        const wrapper = inputEl.closest('.form-row');
+        wrapper.style.position = 'relative';
+
+        function buildDropdown(items) {
+            removeDropdown();
+            if (!items.length) return;
+
+            dropdownEl = document.createElement('ul');
+            dropdownEl.className = 'autocomplete-list';
+
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'autocomplete-item';
+                li.innerHTML =
+                    '<span class="ac-name">'  + escHtml(item.food_name) + '</span>' +
+                    '<span class="ac-meta">'  + Math.round(item.calories) + ' cal' +
+                    (item.serving_size ? ' &middot; ' + escHtml(item.serving_size) : '') +
+                    '</span>';
+
+                // preventDefault stops the input losing focus before click fires
+                li.addEventListener('mousedown', e => e.preventDefault());
+                li.addEventListener('click', () => {
+                    fillFromSuggestion(item);
+                    removeDropdown();
+                });
+                dropdownEl.appendChild(li);
+            });
+
+            wrapper.appendChild(dropdownEl);
+        }
+
+        function removeDropdown() {
+            if (dropdownEl) { dropdownEl.remove(); dropdownEl = null; }
+        }
+
+        function fillFromSuggestion(item) {
+            const form = inputEl.closest('form');
+            inputEl.value           = item.food_name;
+            form.serving_size.value = item.serving_size || '';
+            form.calories.value     = item.calories     || '';
+            form.protein_g.value    = item.protein_g    || '';
+            form.carbs_g.value      = item.carbs_g      || '';
+            form.fat_g.value        = item.fat_g        || '';
+            form.calories.focus();
+        }
+
+        inputEl.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const q = inputEl.value.trim();
+            if (q.length < 2) { removeDropdown(); return; }
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const items = await API.foods.autocomplete(q);
+                    buildDropdown(items);
+                } catch (_) {
+                    removeDropdown();
+                }
+            }, 200);
+        });
+
+        // Short delay lets the mousedown+click on a list item fire first
+        inputEl.addEventListener('blur', () => setTimeout(removeDropdown, 150));
+
+        function outsideClickHandler(e) {
+            // Self-remove if the view has been torn down
+            if (!document.contains(inputEl)) {
+                document.removeEventListener('click', outsideClickHandler);
+                return;
+            }
+            if (!wrapper.contains(e.target)) removeDropdown();
+        }
+        document.addEventListener('click', outsideClickHandler);
     }
 
     return { render };
