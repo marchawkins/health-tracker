@@ -104,16 +104,13 @@ const DashboardView = (() => {
     function renderFoodEntries(entries) {
         if (!entries.length) return '<p class="text-muted">Nothing logged yet.</p>';
         return entries.map(e => `
-            <div class="food-entry">
+            <a href="#food?edit=${e.id}" class="food-entry" aria-label="Edit ${escHtml(e.food_name)}">
                 <div class="food-entry-info">
                     <span class="food-name">${escHtml(e.food_name)}</span>
                     <span class="food-meta">${e.meal_type}${e.serving_size ? ' &middot; ' + escHtml(e.serving_size) : ''}</span>
                 </div>
-                <div class="food-entry-right">
-                    <span class="food-cal">${Math.round(e.calories)}</span>
-                    <a href="#food?edit=${e.id}" class="btn-edit" aria-label="Edit entry">✏️</a>
-                </div>
-            </div>
+                <span class="food-cal">${Math.round(e.calories)}</span>
+            </a>
         `).join('');
     }
 
