@@ -1,6 +1,6 @@
 <?php
 // Walk up two levels from public_html/api/ to reach the config/ directory.
-require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../../../../config/db.php';
 
 function get_db(): PDO {
     static $pdo = null;
