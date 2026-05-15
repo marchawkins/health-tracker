@@ -1,0 +1,16 @@
+Options -Indexes
+
+# Block direct HTTP access to every PHP file except index.php
+<FilesMatch "\.php$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+<Files "index.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+# Route all API paths through index.php
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ index.php [QSA,L]

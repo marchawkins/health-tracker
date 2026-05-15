@@ -1,0 +1,19 @@
+Options -Indexes
+RewriteEngine On
+
+# Serve real files and directories directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Route /api/* to the API router
+RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+# SPA fallback — everything else goes to index.html
+RewriteRule ^ index.html [L]
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
