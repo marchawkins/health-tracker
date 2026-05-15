@@ -1,9 +1,9 @@
 <?php
-$config_path = __DIR__ . '/../../../../../config/db.php';
+$config_path = __DIR__ . '/../../../../config/db.php';
 
 if (!file_exists($config_path)) {
     throw new RuntimeException(
-        'config/db.php not found. Looked in: ' . realpath(__DIR__ . '/../../../../..') . '/config/db.php'
+        'config/db.php not found. Looked in: ' . realpath(__DIR__ . '/../../../..') . '/config/db.php'
     );
 }
 
