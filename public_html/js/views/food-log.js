@@ -2,7 +2,16 @@ const FoodLogView = (() => {
     let listDate = todayStr();
 
     function todayStr() {
-        return new Date().toISOString().slice(0, 10);
+        const d = new Date();
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    function localNow() {
+        const d = new Date(), p = n => String(n).padStart(2, '0');
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
+               p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
     }
 
     function offsetDate(dateStr, days) {
@@ -118,10 +127,11 @@ const FoodLogView = (() => {
                     </div>
                     <input type="hidden" name="source" value="manual">
                     <button type="submit" class="btn btn-primary btn-block">Add Food</button>
+                    <button type="button" id="btn-cancel" class="btn btn-secondary btn-block" style="margin-top:8px;">Cancel</button>
                 </form>
             </div>
 
-            <div class="card">
+            <div class="card" hidden>
                 <div class="section-header">
                     <h2>Log for <span id="fl-label">${fmtShort(initDate)}</span></h2>
                     <div class="date-nav-inline">
@@ -138,6 +148,7 @@ const FoodLogView = (() => {
         document.getElementById('ff-meal').value = guessMealType();
 
         document.getElementById('food-form').addEventListener('submit', handleSubmit);
+        document.getElementById('btn-cancel').addEventListener('click', () => history.back());
         setupAutocomplete(document.getElementById('ff-name'));
 
         function updateListNav() {
@@ -217,6 +228,7 @@ const FoodLogView = (() => {
             sodium_mg:    form.sodium_mg.value  ? parseFloat(form.sodium_mg.value)  : null,
             notes:        form.notes.value.trim() || null,
             source:       form.source ? form.source.value : 'manual',
+            logged_at:    localNow(),
         };
 
         try {
@@ -363,11 +375,13 @@ const FoodLogView = (() => {
                     <input type="hidden" name="source" value="${escHtml(entry.source || 'manual')}">
                     <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
                     <button type="button" id="btn-delete-entry" class="btn btn-danger btn-block" style="margin-top:8px;">Delete Entry</button>
+                    <button type="button" id="btn-cancel" class="btn btn-secondary btn-block" style="margin-top:8px;">Cancel</button>
                 </form>
             </div>
         `;
 
         document.getElementById('ff-meal').value = entry.meal_type || 'snack';
+        document.getElementById('btn-cancel').addEventListener('click', () => history.back());
         setupAutocomplete(document.getElementById('ff-name'));
 
         document.getElementById('food-form').addEventListener('submit', async (e) => {

@@ -1,6 +1,14 @@
 const WeightLogView = (() => {
     function todayStr() {
-        return new Date().toISOString().slice(0, 10);
+        const d = new Date();
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    function localDatetime(dateStr) {
+        const d = new Date(), p = n => String(n).padStart(2, '0');
+        return dateStr + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
     }
 
     function fmtDate(datetimeStr) {
@@ -71,10 +79,10 @@ const WeightLogView = (() => {
         btn.textContent = 'Saving…';
 
         const data = {
-            logged_date: form.logged_date.value,
-            weight:      parseFloat(form.weight.value),
-            unit:        form.unit.value,
-            notes:       form.notes.value.trim() || null,
+            logged_at: localDatetime(form.logged_date.value),
+            weight:    parseFloat(form.weight.value),
+            unit:      form.unit.value,
+            notes:     form.notes.value.trim() || null,
         };
 
         try {

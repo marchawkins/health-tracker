@@ -109,12 +109,21 @@ switch ($method) {
             json_error('Invalid meal_date — expected YYYY-MM-DD');
         }
 
+        if (!empty($data['logged_at'])) {
+            if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $data['logged_at'])) {
+                json_error('Invalid logged_at — expected YYYY-MM-DD HH:MM:SS');
+            }
+            $logged_at = $data['logged_at'];
+        } else {
+            $logged_at = date('Y-m-d H:i:s');
+        }
+
         $db   = get_db();
         $stmt = $db->prepare(
             'INSERT INTO food_logs
              (user_id, meal_date, meal_type, food_name, serving_size,
-              calories, protein_g, carbs_g, fat_g, fiber_g, sodium_mg, notes, source)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+              calories, protein_g, carbs_g, fat_g, fiber_g, sodium_mg, notes, source, logged_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             CURRENT_USER_ID,
@@ -130,6 +139,7 @@ switch ($method) {
             isset($data['sodium_mg'])  ? (float)$data['sodium_mg']  : null,
             isset($data['notes'])      ? trim($data['notes'])        : null,
             ($data['source'] ?? '') === 'openfoodfacts' ? 'openfoodfacts' : 'manual',
+            $logged_at,
         ]);
 
         $insertId = (int)$db->lastInsertId();

@@ -21,8 +21,12 @@ switch ($method) {
         $data = get_json_body();
         require_fields($data, ['weight']);
 
-        // Accept a date string and store as noon to avoid timezone edge cases.
-        if (!empty($data['logged_date'])) {
+        if (!empty($data['logged_at'])) {
+            if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $data['logged_at'])) {
+                json_error('Invalid logged_at — expected YYYY-MM-DD HH:MM:SS');
+            }
+            $logged_at = $data['logged_at'];
+        } elseif (!empty($data['logged_date'])) {
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['logged_date'])) {
                 json_error('Invalid logged_date — expected YYYY-MM-DD');
             }
