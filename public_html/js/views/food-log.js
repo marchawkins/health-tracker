@@ -127,6 +127,7 @@ const FoodLogView = (() => {
                     <div class="date-nav-inline">
                         <button id="fl-prev" class="btn-icon">&larr;</button>
                         <input type="date" id="fl-date" value="${initDate}">
+                        <button id="fl-today" class="btn-icon">Today</button>
                         <button id="fl-next" class="btn-icon">&rarr;</button>
                     </div>
                 </div>
@@ -139,24 +140,43 @@ const FoodLogView = (() => {
         document.getElementById('food-form').addEventListener('submit', handleSubmit);
         setupAutocomplete(document.getElementById('ff-name'));
 
+        function updateListNav() {
+            const isToday = listDate === todayStr();
+            const nextBtn  = document.getElementById('fl-next');
+            const todayBtn = document.getElementById('fl-today');
+            if (nextBtn)  nextBtn.style.display  = isToday ? 'none' : '';
+            if (todayBtn) todayBtn.style.display = isToday ? 'none' : '';
+        }
+
         document.getElementById('fl-date').addEventListener('change', e => {
             listDate = e.target.value;
             updateListLabel();
+            updateListNav();
             loadList();
         });
         document.getElementById('fl-prev').addEventListener('click', () => {
             listDate = offsetDate(listDate, -1);
             document.getElementById('fl-date').value = listDate;
             updateListLabel();
+            updateListNav();
             loadList();
         });
         document.getElementById('fl-next').addEventListener('click', () => {
             listDate = offsetDate(listDate, 1);
             document.getElementById('fl-date').value = listDate;
             updateListLabel();
+            updateListNav();
+            loadList();
+        });
+        document.getElementById('fl-today').addEventListener('click', () => {
+            listDate = todayStr();
+            document.getElementById('fl-date').value = listDate;
+            updateListLabel();
+            updateListNav();
             loadList();
         });
 
+        updateListNav();
         loadList();
     }
 
@@ -397,9 +417,11 @@ const FoodLogView = (() => {
     function setupAutocomplete(inputEl) {
         let gen          = 0;
         let localTimer   = null;
+        let usdaTimer    = null;
         let offTimer     = null;
         let dropdownEl   = null;
         let localResults = [];
+        let usdaResults  = [];
         let offResults   = [];
         let offPage      = 0;
         let offFetching  = false;
@@ -445,6 +467,7 @@ const FoodLogView = (() => {
         function buildDropdown() {
             const allItems = [
                 ...localResults.map(r => ({ ...r, _icon: '🕐' })),
+                ...usdaResults,
                 ...offResults,
             ];
             const hasContent = allItems.length > 0 || offFetching;
@@ -532,6 +555,31 @@ const FoodLogView = (() => {
             };
         }
 
+        function mapUsdaFood(f) {
+            const nutrients = {};
+            (f.foodNutrients || []).forEach(n => { nutrients[n.nutrientNumber] = n.value; });
+            const size = f.servingSize
+                ? (parseFloat(f.servingSize) + (f.servingSizeUnit || 'g').toLowerCase())
+                : null;
+            return {
+                food_name:    toTitleCase(f.description || ''),
+                brand:        null,
+                serving_size: size,
+                calories:     nutrients['208'] != null ? Math.round(nutrients['208'])  : null,
+                protein_g:    nutrients['203'] != null ? parseFloat(nutrients['203'])  : null,
+                carbs_g:      nutrients['205'] != null ? parseFloat(nutrients['205'])  : null,
+                fat_g:        nutrients['204'] != null ? parseFloat(nutrients['204'])  : null,
+                fiber_g:      nutrients['291'] != null ? parseFloat(nutrients['291'])  : null,
+                sodium_mg:    nutrients['307'] != null ? Math.round(nutrients['307'])  : null,
+                source:       'usda',
+                _icon:        '🌾',
+            };
+        }
+
+        function toTitleCase(str) {
+            return str.toLowerCase().replace(/(?:^|[\s,;(])\S/g, c => c.toUpperCase());
+        }
+
         function fillFromSuggestion(item) {
             const form = inputEl.closest('form');
             inputEl.value           = item.food_name;
@@ -540,18 +588,22 @@ const FoodLogView = (() => {
             form.protein_g.value    = item.protein_g    != null ? item.protein_g    : '';
             form.carbs_g.value      = item.carbs_g      != null ? item.carbs_g      : '';
             form.fat_g.value        = item.fat_g        != null ? item.fat_g        : '';
+            if (form.fiber_g)   form.fiber_g.value   = item.fiber_g   != null ? item.fiber_g   : '';
+            if (form.sodium_mg) form.sodium_mg.value = item.sodium_mg != null ? item.sodium_mg : '';
             if (form.source) form.source.value = item.source || 'manual';
             form.calories.focus();
         }
 
         inputEl.addEventListener('input', () => {
             clearTimeout(localTimer);
+            clearTimeout(usdaTimer);
             clearTimeout(offTimer);
             const myGen = ++gen;
             const q     = inputEl.value.trim();
 
             if (q.length < 2) {
                 localResults = [];
+                usdaResults  = [];
                 offResults   = [];
                 offPage      = 0;
                 offFetching  = false;
@@ -561,6 +613,7 @@ const FoodLogView = (() => {
             }
 
             if (q.length < 4) {
+                usdaResults = [];
                 offResults  = [];
                 offPage     = 0;
                 offFetching = false;
@@ -569,13 +622,27 @@ const FoodLogView = (() => {
 
             // Local history: 2+ chars, 200ms debounce, max 3 results
             localTimer = setTimeout(async () => {
-                try { localResults = (await API.foods.autocomplete(q)).slice(0, 3); }
+                try { localResults = await API.foods.autocomplete(q); }
                 catch (_) { localResults = []; }
                 if (gen === myGen) buildDropdown();
             }, 200);
 
-            // OFF: 4+ chars, 500ms debounce, page 1 — resets all OFF state
             if (q.length >= 4) {
+                // USDA: server-side proxy, 500ms debounce
+                usdaTimer = setTimeout(async () => {
+                    if (gen !== myGen) return;
+                    try {
+                        const data = await API.usda.search(q);
+                        if (gen !== myGen) return;
+                        usdaResults = (data.foods || []).map(mapUsdaFood);
+                    } catch (_) {
+                        if (gen !== myGen) return;
+                        usdaResults = [];
+                    }
+                    buildDropdown();
+                }, 500);
+
+                // OFF: 500ms debounce, page 1 — resets all OFF state
                 offTimer = setTimeout(async () => {
                     if (gen !== myGen) return;
 

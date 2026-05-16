@@ -33,6 +33,9 @@ const API = (() => {
             create:      (data)  => request('POST',   '/metrics', data),
             remove:      (id)    => request('DELETE', '/metrics/' + id),
         },
+        usda: {
+            search: (q) => request('GET', '/usda?q=' + encodeURIComponent(q)),
+        },
         // Direct browser → Open Food Facts, not proxied through our backend
         OFF: {
             search: (q, page = 1) => fetch(

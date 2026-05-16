@@ -5,12 +5,6 @@ const App = (() => {
         weight:    WeightLogView,
     };
 
-    const titles = {
-        dashboard: 'Health Tracker',
-        food:      'Food Log',
-        weight:    'Weight Log',
-    };
-
     function currentView() {
         const hash = window.location.hash.replace('#', '').split('?')[0];
         return views[hash] ? hash : 'dashboard';
@@ -19,8 +13,6 @@ const App = (() => {
     async function navigate() {
         const name = currentView();
         const view = views[name];
-
-        document.getElementById('page-title').textContent = titles[name];
 
         document.querySelectorAll('.nav-item').forEach(el => {
             el.classList.toggle('active', el.dataset.view === name);
@@ -39,6 +31,9 @@ const App = (() => {
 
     function init() {
         window.addEventListener('hashchange', navigate);
+        document.getElementById('page-title').addEventListener('click', () => {
+            window.location.hash = '#dashboard';
+        });
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js').catch(() => {});

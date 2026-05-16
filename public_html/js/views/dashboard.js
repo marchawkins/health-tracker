@@ -33,26 +33,43 @@ const DashboardView = (() => {
             <div class="date-nav">
                 <button id="dash-prev" class="btn-icon">&larr;</button>
                 <input type="date" id="dash-date" value="${currentDate}">
+                <button id="dash-today" class="btn-icon">Today</button>
                 <button id="dash-next" class="btn-icon">&rarr;</button>
             </div>
             <div id="dash-content"><div class="loading">Loading&hellip;</div></div>
         `;
 
+        function updateNav() {
+            const isToday = currentDate === todayStr();
+            document.getElementById('dash-next').style.display  = isToday ? 'none' : '';
+            document.getElementById('dash-today').style.display = isToday ? 'none' : '';
+        }
+
         document.getElementById('dash-date').addEventListener('change', e => {
             currentDate = e.target.value;
+            updateNav();
             loadData();
         });
         document.getElementById('dash-prev').addEventListener('click', () => {
             currentDate = offsetDate(currentDate, -1);
             document.getElementById('dash-date').value = currentDate;
+            updateNav();
             loadData();
         });
         document.getElementById('dash-next').addEventListener('click', () => {
             currentDate = offsetDate(currentDate, 1);
             document.getElementById('dash-date').value = currentDate;
+            updateNav();
+            loadData();
+        });
+        document.getElementById('dash-today').addEventListener('click', () => {
+            currentDate = todayStr();
+            document.getElementById('dash-date').value = currentDate;
+            updateNav();
             loadData();
         });
 
+        updateNav();
         loadData();
     }
 

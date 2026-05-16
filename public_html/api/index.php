@@ -64,6 +64,9 @@ switch ($resource) {
     case 'metrics':
         require __DIR__ . '/metrics.php';
         break;
+    case 'usda':
+        require __DIR__ . '/usda.php';
+        break;
     default:
         json_error('Not found', 404);
 }
