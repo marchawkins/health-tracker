@@ -1,5 +1,7 @@
 const BarcodeScanner = (() => {
     let activeControls = null;
+    let activeReader   = null;
+    let activeStream   = null;
     let timeoutId      = null;
     let overlay        = null;
 
@@ -18,6 +20,8 @@ const BarcodeScanner = (() => {
     function teardown() {
         if (timeoutId)      { clearTimeout(timeoutId); timeoutId = null; }
         if (activeControls) { try { activeControls.stop(); } catch (_) {} activeControls = null; }
+        if (activeReader)   { try { activeReader.reset(); } catch (_) {} activeReader = null; }
+        if (activeStream)   { try { activeStream.getTracks().forEach(t => t.stop()); } catch (_) {} activeStream = null; }
         if (overlay)        { overlay.remove(); overlay = null; }
     }
 
@@ -51,15 +55,18 @@ const BarcodeScanner = (() => {
 
         try {
             const reader = new ZXing.BrowserMultiFormatReader();
+            activeReader   = reader;
             activeControls = await reader.decodeFromConstraints(
                 { video: { facingMode: { ideal: 'environment' } } },
                 videoEl,
                 (result) => { if (result) finish(result.getText()); }
             );
-            // Handle cancel that arrived while camera was initialising
-            if (finished && activeControls) {
-                try { activeControls.stop(); } catch (_) {}
-                activeControls = null;
+            // Save stream reference now that the camera is live
+            if (videoEl.srcObject) activeStream = videoEl.srcObject;
+            // Handle cancel/timeout that arrived while camera was initialising
+            if (finished) {
+                if (activeControls) { try { activeControls.stop(); } catch (_) {} activeControls = null; }
+                if (activeStream)   { try { activeStream.getTracks().forEach(t => t.stop()); } catch (_) {} activeStream = null; }
             }
         } catch (err) {
             if (!finished) {
