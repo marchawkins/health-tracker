@@ -499,6 +499,14 @@ a.food-entry:active { background: var(--color-bg); }
 .goal-unit   { font-size: 13px; }
 .goal-target { font-size: 12px; color: var(--color-muted); }
 
+/* ── Water tracker ───────────────────────────────────────── */
+.water-tracker {
+    text-align: center;
+    font-size: 13px;
+    color: var(--color-muted);
+    margin-bottom: var(--space);
+}
+
 /* ── Food name + scan button row ─────────────────────────── */
 .input-with-scan {
     display: flex;

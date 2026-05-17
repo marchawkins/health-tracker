@@ -50,6 +50,30 @@ $quick_log = $prefs ? [
     'fat_g'        => $prefs['quick_log_fat_g'],
 ] : null;
 
+// Water tracking: goal from latest weight (lbs ÷ 2 = oz), consumed from today's matching entries
+$wStmt = $db->prepare('SELECT weight, unit FROM weight_logs WHERE user_id = ? ORDER BY logged_at DESC LIMIT 1');
+$wStmt->execute([CURRENT_USER_ID]);
+$latestWeight = $wStmt->fetch();
+
+$goalOz = 64;
+if ($latestWeight) {
+    $lbs    = $latestWeight['unit'] === 'kg' ? $latestWeight['weight'] * 2.20462 : (float)$latestWeight['weight'];
+    $goalOz = (int)round($lbs / 2);
+}
+
+$hStmt = $db->prepare(
+    "SELECT serving_size FROM food_logs
+     WHERE user_id = ? AND meal_date = ?
+       AND food_name IN ('Water', 'Coffee with Cream')"
+);
+$hStmt->execute([CURRENT_USER_ID, $date]);
+$consumedOz = 0;
+foreach ($hStmt->fetchAll() as $row) {
+    if (preg_match('/(\d+(?:\.\d+)?)\s*oz/i', $row['serving_size'] ?? '', $m)) {
+        $consumedOz += (float)$m[1];
+    }
+}
+
 // Individual entries for the requested day, ordered by meal sequence then time
 $stmt = $db->prepare(
     'SELECT * FROM food_logs
@@ -63,6 +87,7 @@ json_response([
     'date'         => $date,
     'food_summary' => $food_summary,
     'food_entries' => $food_entries,
-    'goals'     => $goals,
-    'quick_log' => $quick_log,
+    'goals'        => $goals,
+    'quick_log'    => $quick_log,
+    'water'        => ['consumed_oz' => $consumedOz, 'goal_oz' => $goalOz],
 ]);

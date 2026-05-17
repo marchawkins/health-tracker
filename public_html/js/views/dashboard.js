@@ -165,10 +165,19 @@ const DashboardView = (() => {
         }
     }
 
+    function waterLine(w) {
+        const consumed  = Math.round(w.consumed_oz);
+        const goal      = Math.round(w.goal_oz);
+        if (consumed >= goal) return '<p class="water-tracker">Goal reached! 🎉</p>';
+        const remaining = goal - consumed;
+        return `<p class="water-tracker">${consumed}oz consumed &middot; ${remaining}oz remaining</p>`;
+    }
+
     function renderContent(container, data) {
         const s         = data.food_summary;
         const goals     = data.goals     || null;
         const ql        = data.quick_log || null;
+        const water     = data.water     || { consumed_oz: 0, goal_oz: 64 };
         const dateLabel = fmtDateLabel(data.date);
         const customLabel = escHtml((ql && ql.name) || '☕ Coffee');
 
@@ -190,6 +199,7 @@ const DashboardView = (() => {
                 <button class="btn btn-secondary" id="ql-custom">${customLabel}</button>
                 <button class="btn btn-secondary" id="ql-scan">📷 Scan</button>
             </div>
+            ${waterLine(water)}
 
             <div class="card">
                 <h2>${escHtml(dateLabel)}'s Food</h2>

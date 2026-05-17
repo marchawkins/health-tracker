@@ -171,6 +171,7 @@ const FoodLogView = (() => {
         document.getElementById('food-form').addEventListener('submit', handleSubmit);
         document.getElementById('btn-cancel').addEventListener('click', () => history.back());
         const ac = setupAutocomplete(document.getElementById('ff-name'));
+        document.getElementById('ff-name').focus();
 
         document.getElementById('ff-scan').addEventListener('click', () => {
             BarcodeScanner.open(async (barcode) => {
