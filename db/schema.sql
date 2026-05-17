@@ -66,7 +66,13 @@ CREATE TABLE IF NOT EXISTS user_profiles (
   goal_fat_g     SMALLINT UNSIGNED,
   goal_protein_g SMALLINT UNSIGNED,
   goal_fiber_g   SMALLINT UNSIGNED,
-  goal_sodium_mg SMALLINT UNSIGNED,
+  goal_sodium_mg         SMALLINT UNSIGNED,
+  quick_log_name         VARCHAR(50),
+  quick_log_serving_size VARCHAR(50),
+  quick_log_calories     DECIMAL(6,1),
+  quick_log_protein_g    DECIMAL(5,2),
+  quick_log_carbs_g      DECIMAL(5,2),
+  quick_log_fat_g        DECIMAL(5,2),
   updated_at     DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_user_profiles_user (user_id)
 );

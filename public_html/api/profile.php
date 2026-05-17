@@ -40,26 +40,34 @@ if ($method === 'PUT') {
             (user_id, display_name, age, sex,
              units, height_ft, height_in, height_cm, goal_weight,
              activity_level, goal,
-             goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg,
+             quick_log_name, quick_log_serving_size, quick_log_calories,
+             quick_log_protein_g, quick_log_carbs_g, quick_log_fat_g)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON DUPLICATE KEY UPDATE
-             display_name    = VALUES(display_name),
-             age             = VALUES(age),
-             sex             = VALUES(sex),
-             units           = VALUES(units),
-             height_ft       = VALUES(height_ft),
-             height_in       = VALUES(height_in),
-             height_cm       = VALUES(height_cm),
-             goal_weight     = VALUES(goal_weight),
-             activity_level  = VALUES(activity_level),
-             goal            = VALUES(goal),
-             goal_calories   = VALUES(goal_calories),
-             goal_carbs_g    = VALUES(goal_carbs_g),
-             goal_fat_g      = VALUES(goal_fat_g),
-             goal_protein_g  = VALUES(goal_protein_g),
-             goal_fiber_g    = VALUES(goal_fiber_g),
-             goal_sodium_mg  = VALUES(goal_sodium_mg),
-             updated_at      = CURRENT_TIMESTAMP'
+             display_name           = VALUES(display_name),
+             age                    = VALUES(age),
+             sex                    = VALUES(sex),
+             units                  = VALUES(units),
+             height_ft              = VALUES(height_ft),
+             height_in              = VALUES(height_in),
+             height_cm              = VALUES(height_cm),
+             goal_weight            = VALUES(goal_weight),
+             activity_level         = VALUES(activity_level),
+             goal                   = VALUES(goal),
+             goal_calories          = VALUES(goal_calories),
+             goal_carbs_g           = VALUES(goal_carbs_g),
+             goal_fat_g             = VALUES(goal_fat_g),
+             goal_protein_g         = VALUES(goal_protein_g),
+             goal_fiber_g           = VALUES(goal_fiber_g),
+             goal_sodium_mg         = VALUES(goal_sodium_mg),
+             quick_log_name         = VALUES(quick_log_name),
+             quick_log_serving_size = VALUES(quick_log_serving_size),
+             quick_log_calories     = VALUES(quick_log_calories),
+             quick_log_protein_g    = VALUES(quick_log_protein_g),
+             quick_log_carbs_g      = VALUES(quick_log_carbs_g),
+             quick_log_fat_g        = VALUES(quick_log_fat_g),
+             updated_at             = CURRENT_TIMESTAMP'
     );
 
     $stmt->execute([
@@ -79,7 +87,13 @@ if ($method === 'PUT') {
         isset($data['goal_fat_g'])     ? (int)$data['goal_fat_g']       : null,
         isset($data['goal_protein_g']) ? (int)$data['goal_protein_g']   : null,
         isset($data['goal_fiber_g'])   ? (int)$data['goal_fiber_g']     : null,
-        isset($data['goal_sodium_mg']) ? (int)$data['goal_sodium_mg']   : null,
+        isset($data['goal_sodium_mg'])        ? (int)$data['goal_sodium_mg']            : null,
+        isset($data['quick_log_name'])         ? trim($data['quick_log_name'])           : null,
+        isset($data['quick_log_serving_size']) ? trim($data['quick_log_serving_size'])   : null,
+        isset($data['quick_log_calories'])     ? (float)$data['quick_log_calories']      : null,
+        isset($data['quick_log_protein_g'])    ? (float)$data['quick_log_protein_g']     : null,
+        isset($data['quick_log_carbs_g'])      ? (float)$data['quick_log_carbs_g']       : null,
+        isset($data['quick_log_fat_g'])        ? (float)$data['quick_log_fat_g']         : null,
     ]);
 
     $stmt2 = $db->prepare('SELECT * FROM user_profiles WHERE user_id = ?');

@@ -471,6 +471,14 @@ a.food-entry:active { background: var(--color-bg); }
     to { transform: rotate(360deg); }
 }
 
+/* ── Quick-log buttons ───────────────────────────────────── */
+.quick-log-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: var(--space);
+}
+.quick-log-row .btn { flex: 1; }
+
 /* ── Dashboard goals grid ────────────────────────────────── */
 .dash-goals {
     display: grid;

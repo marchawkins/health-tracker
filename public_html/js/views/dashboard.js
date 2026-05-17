@@ -105,10 +105,72 @@ const DashboardView = (() => {
             g + '</div>';
     }
 
+    function guessMealType() {
+        const h = new Date().getHours();
+        if (h >= 5  && h < 10) return 'breakfast';
+        if (h >= 10 && h < 14) return 'lunch';
+        if (h >= 17 && h < 21) return 'dinner';
+        return 'snack';
+    }
+
+    function localNow() {
+        const d = new Date(), p = n => String(n).padStart(2, '0');
+        return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
+               p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    }
+
+    async function quickLog(type, ql) {
+        const btnId = type === 'water' ? 'ql-water' : 'ql-custom';
+        const btn   = document.getElementById(btnId);
+        if (btn) btn.disabled = true;
+
+        const loggedAt = localNow();
+        const dateStr  = loggedAt.slice(0, 10);
+        const mealType = guessMealType();
+
+        let entry;
+        if (type === 'water') {
+            entry = {
+                meal_date:    dateStr,
+                meal_type:    mealType,
+                food_name:    'Water',
+                serving_size: '12oz',
+                calories:     0,
+                logged_at:    loggedAt,
+            };
+        } else {
+            entry = {
+                meal_date:    dateStr,
+                meal_type:    mealType,
+                food_name:    (ql && ql.name)         || 'Coffee with Cream',
+                serving_size: (ql && ql.serving_size) || '12oz',
+                calories:     (ql && ql.calories  != null) ? parseFloat(ql.calories)  : 60,
+                protein_g:    (ql && ql.protein_g != null) ? parseFloat(ql.protein_g) : 1,
+                carbs_g:      (ql && ql.carbs_g   != null) ? parseFloat(ql.carbs_g)   : 4,
+                fat_g:        (ql && ql.fat_g     != null) ? parseFloat(ql.fat_g)     : 4,
+                logged_at:    loggedAt,
+            };
+        }
+
+        try {
+            await API.foods.create(entry);
+            const label = type === 'water'
+                ? '💧 Water logged'
+                : escHtml((ql && ql.name) || '☕ Coffee') + ' logged';
+            Toast.success(label, 2000);
+            loadData();
+        } catch (err) {
+            Toast.error('Failed to log: ' + err.message);
+            if (btn) btn.disabled = false;
+        }
+    }
+
     function renderContent(container, data) {
         const s         = data.food_summary;
-        const goals     = data.goals || null;
+        const goals     = data.goals     || null;
+        const ql        = data.quick_log || null;
         const dateLabel = fmtDateLabel(data.date);
+        const customLabel = escHtml((ql && ql.name) || '☕ Coffee');
 
         container.innerHTML = `
             <div class="card">
@@ -123,12 +185,20 @@ const DashboardView = (() => {
                 </div>
             </div>
 
+            <div class="quick-log-row">
+                <button class="btn btn-secondary" id="ql-water">💧 Water</button>
+                <button class="btn btn-secondary" id="ql-custom">${customLabel}</button>
+            </div>
+
             <div class="card">
                 <h2>${escHtml(dateLabel)}'s Food</h2>
                 ${renderFoodEntries(data.food_entries)}
                 <a href="#food?date=${data.date}" class="btn btn-secondary btn-block" style="margin-top:12px;">+ Add Food</a>
             </div>
         `;
+
+        document.getElementById('ql-water').addEventListener('click',  () => quickLog('water',  ql));
+        document.getElementById('ql-custom').addEventListener('click', () => quickLog('custom', ql));
     }
 
     function renderFoodEntries(entries) {

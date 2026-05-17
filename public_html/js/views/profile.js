@@ -172,6 +172,38 @@ const ProfileView = (() => {
                         <label for="pf-gsod">Sodium mg (stay under)</label>
                         <input type="number" id="pf-gsod" name="goal_sodium_mg" min="0" step="1" placeholder="0" inputmode="numeric">
                     </div>
+                </div>
+
+                <div class="card">
+                    <h2>Quick Log Button</h2>
+                    <p class="text-muted" style="font-size:13px;margin-bottom:14px;">Customizes the shortcut button on the dashboard. Defaults to 12oz Coffee with Cream.</p>
+
+                    <div class="form-row">
+                        <label for="pf-ql-name">Button Label</label>
+                        <input type="text" id="pf-ql-name" name="quick_log_name" placeholder="☕ Coffee" maxlength="50">
+                    </div>
+                    <div class="form-row">
+                        <label for="pf-ql-serving">Serving Size</label>
+                        <input type="text" id="pf-ql-serving" name="quick_log_serving_size" placeholder="12oz">
+                    </div>
+                    <div class="form-row">
+                        <label for="pf-ql-cal">Calories</label>
+                        <input type="number" id="pf-ql-cal" name="quick_log_calories" min="0" step="1" placeholder="60" inputmode="numeric">
+                    </div>
+                    <div class="macro-inputs">
+                        <div class="form-row">
+                            <label for="pf-ql-prot">Protein (g)</label>
+                            <input type="number" id="pf-ql-prot" name="quick_log_protein_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                        </div>
+                        <div class="form-row">
+                            <label for="pf-ql-carb">Carbs (g)</label>
+                            <input type="number" id="pf-ql-carb" name="quick_log_carbs_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                        </div>
+                        <div class="form-row">
+                            <label for="pf-ql-fat">Fat (g)</label>
+                            <input type="number" id="pf-ql-fat" name="quick_log_fat_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                        </div>
+                    </div>
 
                     <button type="submit" class="btn btn-primary btn-block">Save Profile</button>
                 </div>
@@ -206,6 +238,13 @@ const ProfileView = (() => {
         if (p.goal_protein_g) form.goal_protein_g.value = p.goal_protein_g;
         if (p.goal_fiber_g)   form.goal_fiber_g.value   = p.goal_fiber_g;
         if (p.goal_sodium_mg) form.goal_sodium_mg.value = p.goal_sodium_mg;
+
+        if (p.quick_log_name)         form.quick_log_name.value         = p.quick_log_name;
+        if (p.quick_log_serving_size) form.quick_log_serving_size.value = p.quick_log_serving_size;
+        if (p.quick_log_calories)     form.quick_log_calories.value     = p.quick_log_calories;
+        if (p.quick_log_protein_g)    form.quick_log_protein_g.value    = p.quick_log_protein_g;
+        if (p.quick_log_carbs_g)      form.quick_log_carbs_g.value      = p.quick_log_carbs_g;
+        if (p.quick_log_fat_g)        form.quick_log_fat_g.value        = p.quick_log_fat_g;
 
         // ── Helper functions ───────────────────────────────────────────────
 
@@ -351,7 +390,13 @@ const ProfileView = (() => {
             goal_fat_g:     form.goal_fat_g.value     ? parseInt(form.goal_fat_g.value)     : null,
             goal_protein_g: form.goal_protein_g.value ? parseInt(form.goal_protein_g.value) : null,
             goal_fiber_g:   form.goal_fiber_g.value   ? parseInt(form.goal_fiber_g.value)   : null,
-            goal_sodium_mg: form.goal_sodium_mg.value ? parseInt(form.goal_sodium_mg.value) : null,
+            goal_sodium_mg:        form.goal_sodium_mg.value        ? parseInt(form.goal_sodium_mg.value)           : null,
+            quick_log_name:        form.quick_log_name.value.trim() || null,
+            quick_log_serving_size: form.quick_log_serving_size.value.trim() || null,
+            quick_log_calories:    form.quick_log_calories.value    ? parseFloat(form.quick_log_calories.value)    : null,
+            quick_log_protein_g:   form.quick_log_protein_g.value   ? parseFloat(form.quick_log_protein_g.value)   : null,
+            quick_log_carbs_g:     form.quick_log_carbs_g.value     ? parseFloat(form.quick_log_carbs_g.value)     : null,
+            quick_log_fat_g:       form.quick_log_fat_g.value       ? parseFloat(form.quick_log_fat_g.value)       : null,
         };
 
         try {

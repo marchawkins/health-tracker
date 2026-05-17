@@ -23,12 +23,32 @@ $stmt = $db->prepare(
 $stmt->execute([CURRENT_USER_ID, $date]);
 $food_summary = $stmt->fetch();
 
-$gstmt = $db->prepare(
-    'SELECT goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg
+$pstmt = $db->prepare(
+    'SELECT goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg,
+            quick_log_name, quick_log_serving_size, quick_log_calories,
+            quick_log_protein_g, quick_log_carbs_g, quick_log_fat_g
      FROM user_profiles WHERE user_id = ?'
 );
-$gstmt->execute([CURRENT_USER_ID]);
-$goals = $gstmt->fetch() ?: null;
+$pstmt->execute([CURRENT_USER_ID]);
+$prefs = $pstmt->fetch() ?: null;
+
+$goals = $prefs ? [
+    'goal_calories'  => $prefs['goal_calories'],
+    'goal_carbs_g'   => $prefs['goal_carbs_g'],
+    'goal_fat_g'     => $prefs['goal_fat_g'],
+    'goal_protein_g' => $prefs['goal_protein_g'],
+    'goal_fiber_g'   => $prefs['goal_fiber_g'],
+    'goal_sodium_mg' => $prefs['goal_sodium_mg'],
+] : null;
+
+$quick_log = $prefs ? [
+    'name'         => $prefs['quick_log_name'],
+    'serving_size' => $prefs['quick_log_serving_size'],
+    'calories'     => $prefs['quick_log_calories'],
+    'protein_g'    => $prefs['quick_log_protein_g'],
+    'carbs_g'      => $prefs['quick_log_carbs_g'],
+    'fat_g'        => $prefs['quick_log_fat_g'],
+] : null;
 
 // Individual entries for the requested day, ordered by meal sequence then time
 $stmt = $db->prepare(
@@ -43,5 +63,6 @@ json_response([
     'date'         => $date,
     'food_summary' => $food_summary,
     'food_entries' => $food_entries,
-    'goals'        => $goals,
+    'goals'     => $goals,
+    'quick_log' => $quick_log,
 ]);
