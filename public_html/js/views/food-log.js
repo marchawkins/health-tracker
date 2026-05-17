@@ -96,6 +96,10 @@ const FoodLogView = (() => {
                         <input type="text" id="ff-serving" name="serving_size" placeholder="e.g. 4 oz, 1 cup">
                     </div>
                     <div class="form-row">
+                        <label for="ff-servings">Number of Servings</label>
+                        <input type="number" id="ff-servings" name="servings" min="0.25" step="0.25" value="1" inputmode="decimal">
+                    </div>
+                    <div class="form-row">
                         <label for="ff-cal">Calories *</label>
                         <input type="number" id="ff-cal" name="calories" min="0" step="1" placeholder="0" required inputmode="decimal">
                     </div>
