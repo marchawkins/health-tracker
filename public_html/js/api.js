@@ -42,7 +42,7 @@ const API = (() => {
             save: (data) => request('PUT', '/profile', data),
         },
         OFF: {
-            search:  (q, page = 1) => request('GET', '/openfoodfacts?action=search&q=' + encodeURIComponent(q) + '&page=' + page),
+            search:  (q, page = 1, signal) => request('GET', '/openfoodfacts?action=search&q=' + encodeURIComponent(q) + '&page=' + page, undefined, signal),
             barcode: (barcode)     => request('GET', '/openfoodfacts?action=barcode&barcode=' + encodeURIComponent(barcode)),
         },
     };

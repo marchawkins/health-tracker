@@ -9,7 +9,8 @@ function off_curl(string $url): array {
         CURLOPT_HTTPGET        => true,
         CURLOPT_HTTPHEADER     => ['Accept: application/json'],
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 8,
+        CURLOPT_CONNECTTIMEOUT => 2,
+        CURLOPT_TIMEOUT        => 3,
         CURLOPT_FAILONERROR    => false,
         CURLOPT_USERAGENT      => 'HealthTracker/1.0 (health.marchawkins.com)',
     ]);

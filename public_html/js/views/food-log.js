@@ -1,6 +1,19 @@
 const FoodLogView = (() => {
     let listDate = todayStr();
 
+    // After a failure, skip requests for cooldownMs to avoid console 502 spam.
+    // Persists across form re-renders for the page session.
+    function makeCircuitBreaker(cooldownMs) {
+        let backoffUntil = 0;
+        return {
+            ready()   { return Date.now() > backoffUntil; },
+            success() { backoffUntil = 0; },
+            failure() { backoffUntil = Date.now() + cooldownMs; },
+        };
+    }
+    const usdaBreaker = makeCircuitBreaker(30000);
+    const offBreaker  = makeCircuitBreaker(30000);
+
     function todayStr() {
         const d = new Date();
         return d.getFullYear() + '-' +
@@ -466,6 +479,7 @@ const FoodLogView = (() => {
         let usdaTimer      = null;
         let offTimer       = null;
         let usdaAbortCtrl  = null;
+        let offAbortCtrl   = null;
         let dropdownEl     = null;
         let localResults   = [];
         let usdaResults    = [];
@@ -560,8 +574,9 @@ const FoodLogView = (() => {
         }
 
         async function fetchNextOffPage() {
-            if (offFetching || offDone) return;
-            offFetching    = true;
+            if (offFetching || offDone || !offBreaker.ready()) return;
+            offFetching  = true;
+            offAbortCtrl = new AbortController();
             const myGen    = gen;
             const nextPage = offPage + 1;
             const q        = inputEl.value.trim();
@@ -569,7 +584,9 @@ const FoodLogView = (() => {
             refreshFooter();
 
             try {
-                const data = await API.OFF.search(q, nextPage);
+                const data = await API.OFF.search(q, nextPage, offAbortCtrl.signal);
+                offAbortCtrl = null;
+                offBreaker.success();
                 if (gen !== myGen) return;
 
                 const products = (data.products || []).filter(p => p.product_name);
@@ -580,7 +597,10 @@ const FoodLogView = (() => {
                 const newItems = products.map(mapOffProduct);
                 offResults = offResults.concat(newItems);
                 appendItems(newItems);
-            } catch (_) {
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                offAbortCtrl = null;
+                offBreaker.failure();
                 if (gen !== myGen) return;
                 offFetching = false;
                 offDone     = true;
@@ -658,6 +678,7 @@ const FoodLogView = (() => {
             clearTimeout(usdaTimer);
             clearTimeout(offTimer);
             if (usdaAbortCtrl) { usdaAbortCtrl.abort(); usdaAbortCtrl = null; }
+            if (offAbortCtrl)  { offAbortCtrl.abort();  offAbortCtrl  = null; }
             baseNutrition = null;
             const myGen = ++gen;
             const q     = inputEl.value.trim();
@@ -691,16 +712,18 @@ const FoodLogView = (() => {
             if (q.length >= 4) {
                 // USDA: server-side proxy, 500ms debounce, one request in flight at a time
                 usdaTimer = setTimeout(async () => {
-                    if (gen !== myGen) return;
+                    if (gen !== myGen || !usdaBreaker.ready()) return;
                     usdaAbortCtrl = new AbortController();
                     try {
                         const data = await API.usda.search(q, usdaAbortCtrl.signal);
                         usdaAbortCtrl = null;
+                        usdaBreaker.success();
                         if (gen !== myGen) return;
                         usdaResults = (data.foods || []).map(mapUsdaFood);
                     } catch (err) {
                         if (err.name === 'AbortError') return;
                         usdaAbortCtrl = null;
+                        usdaBreaker.failure();
                         if (gen !== myGen) return;
                         usdaResults = [];
                     }
@@ -709,16 +732,19 @@ const FoodLogView = (() => {
 
                 // OFF: 500ms debounce, page 1 — resets all OFF state
                 offTimer = setTimeout(async () => {
-                    if (gen !== myGen) return;
+                    if (gen !== myGen || !offBreaker.ready()) return;
 
-                    offResults  = [];
-                    offPage     = 0;
-                    offFetching = true;
-                    offDone     = false;
+                    offResults   = [];
+                    offPage      = 0;
+                    offFetching  = true;
+                    offDone      = false;
+                    offAbortCtrl = new AbortController();
                     buildDropdown(); // show local results + spinner while fetching
 
                     try {
-                        const data = await API.OFF.search(q, 1);
+                        const data = await API.OFF.search(q, 1, offAbortCtrl.signal);
+                        offAbortCtrl = null;
+                        offBreaker.success();
                         if (gen !== myGen) return;
 
                         const products = (data.products || []).filter(p => p.product_name);
@@ -728,10 +754,13 @@ const FoodLogView = (() => {
 
                         offResults = products.map(mapOffProduct);
                         buildDropdown();
-                    } catch (_) {
+                    } catch (err) {
+                        if (err.name === 'AbortError') return;
+                        offAbortCtrl = null;
+                        offBreaker.failure();
                         if (gen !== myGen) return;
                         offFetching = false;
-                        offDone     = true;
+                        offDone     = false;
                         buildDropdown();
                     }
                 }, 500);
