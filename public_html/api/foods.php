@@ -10,7 +10,7 @@ if ($method === 'GET' && $sub === 'autocomplete') {
     $stmt = $db->prepare(
         'SELECT
             food_name,
-            ANY_VALUE(serving_size)    AS serving_size,
+            MIN(serving_size)          AS serving_size,
             ROUND(AVG(calories),  1)   AS calories,
             ROUND(AVG(protein_g), 2)   AS protein_g,
             ROUND(AVG(carbs_g),   2)   AS carbs_g,

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -l \"/Users/marc/My Drive/Projects/health-tracker/public_html/api/foods.php\")",
+      "Bash(php -l \"/Users/marc/My Drive/Projects/health-tracker/public_html/api/openfoodfacts.php\")",
+      "Bash(php -l \"/Users/marc/My Drive/Projects/health-tracker/public_html/api/index.php\")"
+    ]
+  }
+}
