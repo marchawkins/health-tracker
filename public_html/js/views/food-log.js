@@ -347,6 +347,10 @@ const FoodLogView = (() => {
                         <input type="text" id="ff-serving" name="serving_size" value="${escHtml(entry.serving_size || '')}">
                     </div>
                     <div class="form-row">
+                        <label for="ff-servings">Number of Servings</label>
+                        <input type="number" id="ff-servings" name="servings" min="0.25" step="0.25" value="1" inputmode="decimal">
+                    </div>
+                    <div class="form-row">
                         <label for="ff-cal">Calories *</label>
                         <input type="number" id="ff-cal" name="calories" min="0" step="1" value="${entry.calories || ''}" required inputmode="decimal">
                     </div>
@@ -433,17 +437,18 @@ const FoodLogView = (() => {
     }
 
     function setupAutocomplete(inputEl) {
-        let gen          = 0;
-        let localTimer   = null;
-        let usdaTimer    = null;
-        let offTimer     = null;
-        let dropdownEl   = null;
-        let localResults = [];
-        let usdaResults  = [];
-        let offResults   = [];
-        let offPage      = 0;
-        let offFetching  = false;
-        let offDone      = false;
+        let gen           = 0;
+        let localTimer    = null;
+        let usdaTimer     = null;
+        let offTimer      = null;
+        let dropdownEl    = null;
+        let localResults  = [];
+        let usdaResults   = [];
+        let offResults    = [];
+        let offPage       = 0;
+        let offFetching   = false;
+        let offDone       = false;
+        let baseNutrition = null;
 
         const OFF_PAGE_SIZE = 20;
         const wrapper = inputEl.closest('.form-row');
@@ -600,14 +605,24 @@ const FoodLogView = (() => {
 
         function fillFromSuggestion(item) {
             const form = inputEl.closest('form');
+            baseNutrition = {
+                calories:  item.calories  != null ? item.calories  : null,
+                protein_g: item.protein_g != null ? item.protein_g : null,
+                carbs_g:   item.carbs_g   != null ? item.carbs_g   : null,
+                fat_g:     item.fat_g     != null ? item.fat_g     : null,
+                fiber_g:   item.fiber_g   != null ? item.fiber_g   : null,
+                sodium_mg: item.sodium_mg != null ? item.sodium_mg : null,
+            };
             inputEl.value           = item.food_name;
             form.serving_size.value = item.serving_size != null ? item.serving_size : '';
-            form.calories.value     = item.calories     != null ? item.calories     : '';
-            form.protein_g.value    = item.protein_g    != null ? item.protein_g    : '';
-            form.carbs_g.value      = item.carbs_g      != null ? item.carbs_g      : '';
-            form.fat_g.value        = item.fat_g        != null ? item.fat_g        : '';
-            if (form.fiber_g)   form.fiber_g.value   = item.fiber_g   != null ? item.fiber_g   : '';
-            if (form.sodium_mg) form.sodium_mg.value = item.sodium_mg != null ? item.sodium_mg : '';
+            if (form.servings) form.servings.value = '1';
+            const fmt = v => v != null ? Math.round(v * 10) / 10 : '';
+            form.calories.value  = fmt(baseNutrition.calories);
+            form.protein_g.value = fmt(baseNutrition.protein_g);
+            form.carbs_g.value   = fmt(baseNutrition.carbs_g);
+            form.fat_g.value     = fmt(baseNutrition.fat_g);
+            if (form.fiber_g)   form.fiber_g.value   = fmt(baseNutrition.fiber_g);
+            if (form.sodium_mg) form.sodium_mg.value = fmt(baseNutrition.sodium_mg);
             if (form.source) form.source.value = item.source || 'manual';
             form.calories.focus();
         }
@@ -616,6 +631,7 @@ const FoodLogView = (() => {
             clearTimeout(localTimer);
             clearTimeout(usdaTimer);
             clearTimeout(offTimer);
+            baseNutrition = null;
             const myGen = ++gen;
             const q     = inputEl.value.trim();
 
@@ -690,6 +706,21 @@ const FoodLogView = (() => {
                 }, 500);
             }
         });
+
+        const form = inputEl.closest('form');
+        if (form.servings) {
+            form.servings.addEventListener('input', () => {
+                if (!baseNutrition) return;
+                const n   = Math.max(0, parseFloat(form.servings.value) || 0);
+                const fmt = v => v != null ? Math.round(v * n * 10) / 10 : '';
+                form.calories.value  = fmt(baseNutrition.calories);
+                form.protein_g.value = fmt(baseNutrition.protein_g);
+                form.carbs_g.value   = fmt(baseNutrition.carbs_g);
+                form.fat_g.value     = fmt(baseNutrition.fat_g);
+                if (form.fiber_g)   form.fiber_g.value   = fmt(baseNutrition.fiber_g);
+                if (form.sodium_mg) form.sodium_mg.value = fmt(baseNutrition.sodium_mg);
+            });
+        }
 
         inputEl.addEventListener('blur', () => setTimeout(removeDropdown, 150));
 
