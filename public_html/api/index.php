@@ -67,6 +67,9 @@ switch ($resource) {
     case 'usda':
         require __DIR__ . '/usda.php';
         break;
+    case 'openfoodfacts':
+        require __DIR__ . '/openfoodfacts.php';
+        break;
     case 'profile':
         require __DIR__ . '/profile.php';
         break;

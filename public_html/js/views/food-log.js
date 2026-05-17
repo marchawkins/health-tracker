@@ -461,18 +461,19 @@ const FoodLogView = (() => {
     }
 
     function setupAutocomplete(inputEl) {
-        let gen           = 0;
-        let localTimer    = null;
-        let usdaTimer     = null;
-        let offTimer      = null;
-        let dropdownEl    = null;
-        let localResults  = [];
-        let usdaResults   = [];
-        let offResults    = [];
-        let offPage       = 0;
-        let offFetching   = false;
-        let offDone       = false;
-        let baseNutrition = null;
+        let gen            = 0;
+        let localTimer     = null;
+        let usdaTimer      = null;
+        let offTimer       = null;
+        let usdaAbortCtrl  = null;
+        let dropdownEl     = null;
+        let localResults   = [];
+        let usdaResults    = [];
+        let offResults     = [];
+        let offPage        = 0;
+        let offFetching    = false;
+        let offDone        = false;
+        let baseNutrition  = null;
 
         const OFF_PAGE_SIZE = 20;
         const wrapper = inputEl.closest('.form-row');
@@ -656,6 +657,7 @@ const FoodLogView = (() => {
             clearTimeout(localTimer);
             clearTimeout(usdaTimer);
             clearTimeout(offTimer);
+            if (usdaAbortCtrl) { usdaAbortCtrl.abort(); usdaAbortCtrl = null; }
             baseNutrition = null;
             const myGen = ++gen;
             const q     = inputEl.value.trim();
@@ -687,14 +689,18 @@ const FoodLogView = (() => {
             }, 200);
 
             if (q.length >= 4) {
-                // USDA: server-side proxy, 500ms debounce
+                // USDA: server-side proxy, 500ms debounce, one request in flight at a time
                 usdaTimer = setTimeout(async () => {
                     if (gen !== myGen) return;
+                    usdaAbortCtrl = new AbortController();
                     try {
-                        const data = await API.usda.search(q);
+                        const data = await API.usda.search(q, usdaAbortCtrl.signal);
+                        usdaAbortCtrl = null;
                         if (gen !== myGen) return;
                         usdaResults = (data.foods || []).map(mapUsdaFood);
-                    } catch (_) {
+                    } catch (err) {
+                        if (err.name === 'AbortError') return;
+                        usdaAbortCtrl = null;
                         if (gen !== myGen) return;
                         usdaResults = [];
                     }

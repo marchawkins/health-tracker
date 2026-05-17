@@ -81,12 +81,7 @@ const BarcodeScanner = (() => {
 
     async function lookupBarcode(barcode) {
         try {
-            const resp = await fetch(
-                'https://world.openfoodfacts.org/api/v0/product/' +
-                encodeURIComponent(barcode) + '.json'
-            );
-            if (!resp.ok) return null;
-            const data = await resp.json();
+            const data = await API.OFF.barcode(barcode);
             if (data.status !== 1 || !data.product) return null;
             return mapProduct(data.product, barcode);
         } catch (_) {

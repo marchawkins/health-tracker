@@ -1,7 +1,8 @@
 const API = (() => {
-    async function request(method, path, body) {
+    async function request(method, path, body, signal) {
         const opts = { method, headers: { 'Content-Type': 'application/json' } };
         if (body !== undefined) opts.body = JSON.stringify(body);
+        if (signal)             opts.signal = signal;
 
         const res  = await fetch('/api' + path, opts);
         const data = await res.json();
@@ -34,21 +35,15 @@ const API = (() => {
             remove:      (id)    => request('DELETE', '/metrics/' + id),
         },
         usda: {
-            search: (q) => request('GET', '/usda?q=' + encodeURIComponent(q)),
+            search: (q, signal) => request('GET', '/usda?q=' + encodeURIComponent(q), undefined, signal),
         },
         profile: {
             get:  ()     => request('GET', '/profile'),
             save: (data) => request('PUT', '/profile', data),
         },
-        // Direct browser → Open Food Facts, not proxied through our backend
         OFF: {
-            search: (q, page = 1) => fetch(
-                'https://world.openfoodfacts.org/cgi/search.pl' +
-                '?search_terms=' + encodeURIComponent(q) +
-                '&json=true&page_size=20&page=' + page +
-                '&sort_by=unique_scans_n&countries_tags=en:united-states' +
-                '&fields=product_name,brands,nutriments,serving_size'
-            ).then(r => { if (!r.ok) throw new Error('OFF failed'); return r.json(); }),
+            search:  (q, page = 1) => request('GET', '/openfoodfacts?action=search&q=' + encodeURIComponent(q) + '&page=' + page),
+            barcode: (barcode)     => request('GET', '/openfoodfacts?action=barcode&barcode=' + encodeURIComponent(barcode)),
         },
     };
 })();
