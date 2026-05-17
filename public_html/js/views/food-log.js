@@ -89,7 +89,10 @@ const FoodLogView = (() => {
                     </div>
                     <div class="form-row">
                         <label for="ff-name">Food Name *</label>
-                        <input type="text" id="ff-name" name="food_name" placeholder="e.g. Chicken breast" required autocomplete="off">
+                        <div class="input-with-scan">
+                            <input type="text" id="ff-name" name="food_name" placeholder="e.g. Chicken breast" required autocomplete="off">
+                            <button type="button" id="ff-scan" class="btn-icon" aria-label="Scan barcode">📷</button>
+                        </div>
                     </div>
                     <div class="form-row">
                         <label for="ff-serving">Serving Size</label>
@@ -130,6 +133,7 @@ const FoodLogView = (() => {
                         <textarea id="ff-notes" name="notes" rows="2" placeholder="Optional"></textarea>
                     </div>
                     <input type="hidden" name="source" value="manual">
+                    <input type="hidden" name="off_barcode" value="">
                     <button type="submit" class="btn btn-primary btn-block">Add Food</button>
                     <button type="button" id="btn-cancel" class="btn btn-secondary btn-block" style="margin-top:8px;">Cancel</button>
                 </form>
@@ -153,7 +157,26 @@ const FoodLogView = (() => {
 
         document.getElementById('food-form').addEventListener('submit', handleSubmit);
         document.getElementById('btn-cancel').addEventListener('click', () => history.back());
-        setupAutocomplete(document.getElementById('ff-name'));
+        const ac = setupAutocomplete(document.getElementById('ff-name'));
+
+        document.getElementById('ff-scan').addEventListener('click', () => {
+            BarcodeScanner.open(async (barcode) => {
+                if (!barcode) return;
+                Toast.info('Looking up barcode…', 2000);
+                const product = await BarcodeScanner.lookupBarcode(barcode);
+                if (!product) {
+                    Toast.info('Product not found — try searching manually', 4000);
+                    return;
+                }
+                ac.fill(product);
+            });
+        });
+
+        const prefill = sessionStorage.getItem('prefill_food');
+        if (prefill) {
+            sessionStorage.removeItem('prefill_food');
+            try { ac.fill(JSON.parse(prefill)); } catch (_) {}
+        }
 
         function updateListNav() {
             const isToday = listDate === todayStr();
@@ -232,6 +255,7 @@ const FoodLogView = (() => {
             sodium_mg:    form.sodium_mg.value  ? parseFloat(form.sodium_mg.value)  : null,
             notes:        form.notes.value.trim() || null,
             source:       form.source ? form.source.value : 'manual',
+            off_barcode:  form.off_barcode && form.off_barcode.value ? form.off_barcode.value : null,
             logged_at:    localNow(),
         };
 
@@ -621,9 +645,10 @@ const FoodLogView = (() => {
             form.protein_g.value = fmt(baseNutrition.protein_g);
             form.carbs_g.value   = fmt(baseNutrition.carbs_g);
             form.fat_g.value     = fmt(baseNutrition.fat_g);
-            if (form.fiber_g)   form.fiber_g.value   = fmt(baseNutrition.fiber_g);
-            if (form.sodium_mg) form.sodium_mg.value = fmt(baseNutrition.sodium_mg);
-            if (form.source) form.source.value = item.source || 'manual';
+            if (form.fiber_g)    form.fiber_g.value    = fmt(baseNutrition.fiber_g);
+            if (form.sodium_mg)  form.sodium_mg.value  = fmt(baseNutrition.sodium_mg);
+            if (form.source)     form.source.value     = item.source || 'manual';
+            if (form.off_barcode) form.off_barcode.value = item.off_barcode || '';
             form.calories.focus();
         }
 
@@ -732,6 +757,8 @@ const FoodLogView = (() => {
             if (!wrapper.contains(e.target)) removeDropdown();
         }
         document.addEventListener('click', outsideClickHandler);
+
+        return { fill: fillFromSuggestion };
     }
 
     return { render };

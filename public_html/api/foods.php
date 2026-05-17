@@ -122,8 +122,8 @@ switch ($method) {
         $stmt = $db->prepare(
             'INSERT INTO food_logs
              (user_id, meal_date, meal_type, food_name, serving_size,
-              calories, protein_g, carbs_g, fat_g, fiber_g, sodium_mg, notes, source, logged_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+              calories, protein_g, carbs_g, fat_g, fiber_g, sodium_mg, notes, source, off_barcode, logged_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             CURRENT_USER_ID,
@@ -139,6 +139,7 @@ switch ($method) {
             isset($data['sodium_mg'])  ? (float)$data['sodium_mg']  : null,
             isset($data['notes'])      ? trim($data['notes'])        : null,
             ($data['source'] ?? '') === 'openfoodfacts' ? 'openfoodfacts' : 'manual',
+            isset($data['off_barcode']) ? trim($data['off_barcode']) : null,
             $logged_at,
         ]);
 

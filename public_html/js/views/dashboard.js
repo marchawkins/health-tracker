@@ -188,6 +188,7 @@ const DashboardView = (() => {
             <div class="quick-log-row">
                 <button class="btn btn-secondary" id="ql-water">💧 Water</button>
                 <button class="btn btn-secondary" id="ql-custom">${customLabel}</button>
+                <button class="btn btn-secondary" id="ql-scan">📷 Scan</button>
             </div>
 
             <div class="card">
@@ -199,6 +200,29 @@ const DashboardView = (() => {
 
         document.getElementById('ql-water').addEventListener('click',  () => quickLog('water',  ql));
         document.getElementById('ql-custom').addEventListener('click', () => quickLog('custom', ql));
+        document.getElementById('ql-scan').addEventListener('click', handleScan);
+    }
+
+    function handleScan() {
+        const btn = document.getElementById('ql-scan');
+        if (btn) btn.disabled = true;
+        BarcodeScanner.open(async (barcode) => {
+            if (!barcode) {
+                const b = document.getElementById('ql-scan');
+                if (b) b.disabled = false;
+                return;
+            }
+            Toast.info('Looking up barcode…', 2000);
+            const product = await BarcodeScanner.lookupBarcode(barcode);
+            if (!product) {
+                Toast.info('Product not found — try searching manually', 4000);
+                const b = document.getElementById('ql-scan');
+                if (b) b.disabled = false;
+                return;
+            }
+            sessionStorage.setItem('prefill_food', JSON.stringify(product));
+            window.location.hash = '#food';
+        });
     }
 
     function renderFoodEntries(entries) {
