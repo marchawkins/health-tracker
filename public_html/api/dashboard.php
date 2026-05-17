@@ -11,15 +11,24 @@ $db = get_db();
 // Macro totals for the requested day
 $stmt = $db->prepare(
     'SELECT
-        COUNT(*)                    AS entry_count,
-        COALESCE(SUM(calories), 0)  AS total_calories,
-        COALESCE(SUM(protein_g), 0) AS total_protein,
-        COALESCE(SUM(carbs_g),   0) AS total_carbs,
-        COALESCE(SUM(fat_g),     0) AS total_fat
+        COUNT(*)                      AS entry_count,
+        COALESCE(SUM(calories),   0)  AS total_calories,
+        COALESCE(SUM(protein_g),  0)  AS total_protein,
+        COALESCE(SUM(carbs_g),    0)  AS total_carbs,
+        COALESCE(SUM(fat_g),      0)  AS total_fat,
+        COALESCE(SUM(fiber_g),    0)  AS total_fiber,
+        COALESCE(SUM(sodium_mg),  0)  AS total_sodium
      FROM food_logs WHERE user_id = ? AND meal_date = ?'
 );
 $stmt->execute([CURRENT_USER_ID, $date]);
 $food_summary = $stmt->fetch();
+
+$gstmt = $db->prepare(
+    'SELECT goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg
+     FROM user_profiles WHERE user_id = ?'
+);
+$gstmt->execute([CURRENT_USER_ID]);
+$goals = $gstmt->fetch() ?: null;
 
 // Individual entries for the requested day, ordered by meal sequence then time
 $stmt = $db->prepare(
@@ -34,4 +43,5 @@ json_response([
     'date'         => $date,
     'food_summary' => $food_summary,
     'food_entries' => $food_entries,
+    'goals'        => $goals,
 ]);

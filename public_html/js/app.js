@@ -3,6 +3,7 @@ const App = (() => {
         dashboard: DashboardView,
         food:      FoodLogView,
         weight:    WeightLogView,
+        profile:   ProfileView,
     };
 
     function currentView() {

@@ -67,6 +67,9 @@ switch ($resource) {
     case 'usda':
         require __DIR__ . '/usda.php';
         break;
+    case 'profile':
+        require __DIR__ . '/profile.php';
+        break;
     default:
         json_error('Not found', 404);
 }

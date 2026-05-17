@@ -88,27 +88,38 @@ const DashboardView = (() => {
         }
     }
 
+    function goalStat(val, unit, label, goalVal) {
+        const v = Math.round(val).toLocaleString('en-US');
+        const g = goalVal != null
+            ? ' <span class="goal-target">(' + Math.round(goalVal).toLocaleString('en-US') + (label ? unit : '') + ')</span>'
+            : '';
+        if (label) {
+            return '<div class="goal-stat">' +
+                '<span class="goal-val">' + v + '</span>' +
+                '<span class="goal-unit">' + unit + ' ' + label + '</span>' +
+                g + '</div>';
+        }
+        return '<div class="goal-stat">' +
+            '<span class="goal-val">' + v + '</span>' +
+            '<span class="goal-unit"> ' + unit + '</span>' +
+            g + '</div>';
+    }
+
     function renderContent(container, data) {
         const s         = data.food_summary;
+        const goals     = data.goals || null;
         const dateLabel = fmtDateLabel(data.date);
 
         container.innerHTML = `
             <div class="card">
-                <h2>${escHtml(dateLabel)} Calories</h2>
-                <div class="calorie-total">${Math.round(s.total_calories)}</div>
-                <div class="macro-row">
-                    <div class="macro">
-                        <span class="macro-val">${Math.round(s.total_protein)}g</span>
-                        <span class="macro-label">Protein</span>
-                    </div>
-                    <div class="macro">
-                        <span class="macro-val">${Math.round(s.total_carbs)}g</span>
-                        <span class="macro-label">Carbs</span>
-                    </div>
-                    <div class="macro">
-                        <span class="macro-val">${Math.round(s.total_fat)}g</span>
-                        <span class="macro-label">Fat</span>
-                    </div>
+                <h2>${escHtml(dateLabel)}</h2>
+                <div class="dash-goals">
+                    ${goalStat(s.total_calories, 'cal',    null,     goals && goals.goal_calories)}
+                    ${goalStat(s.total_protein,  'g',      'protein',goals && goals.goal_protein_g)}
+                    ${goalStat(s.total_carbs,    'g',      'carbs',  goals && goals.goal_carbs_g)}
+                    ${goalStat(s.total_fat,      'g',      'fat',    goals && goals.goal_fat_g)}
+                    ${goalStat(s.total_fiber,    'g',      'fiber',  goals && goals.goal_fiber_g)}
+                    ${goalStat(s.total_sodium,   'mg',     'sodium', goals && goals.goal_sodium_mg)}
                 </div>
             </div>
 
@@ -117,7 +128,6 @@ const DashboardView = (() => {
                 ${renderFoodEntries(data.food_entries)}
                 <a href="#food?date=${data.date}" class="btn btn-secondary btn-block" style="margin-top:12px;">+ Add Food</a>
             </div>
-
         `;
     }
 

@@ -36,6 +36,10 @@ const API = (() => {
         usda: {
             search: (q) => request('GET', '/usda?q=' + encodeURIComponent(q)),
         },
+        profile: {
+            get:  ()     => request('GET', '/profile'),
+            save: (data) => request('PUT', '/profile', data),
+        },
         // Direct browser → Open Food Facts, not proxied through our backend
         OFF: {
             search: (q, page = 1) => fetch(
