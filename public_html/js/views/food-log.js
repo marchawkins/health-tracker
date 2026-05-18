@@ -581,11 +581,12 @@ const FoodLogView = (() => {
             const myGen    = gen;
             const nextPage = offPage + 1;
             const q        = inputEl.value.trim();
+            const signal   = offAbortCtrl.signal;
 
             refreshFooter();
 
             try {
-                const data = await API.OFF.search(q, nextPage, offAbortCtrl.signal);
+                const data = await API.withRetry(() => API.OFF.search(q, nextPage, signal), signal);
                 offAbortCtrl = null;
                 offBreaker.success();
                 if (gen !== myGen) return;
@@ -715,8 +716,9 @@ const FoodLogView = (() => {
                 usdaTimer = setTimeout(async () => {
                     if (gen !== myGen || !usdaBreaker.ready()) return;
                     usdaAbortCtrl = new AbortController();
+                    const signal = usdaAbortCtrl.signal;
                     try {
-                        const data = await API.usda.search(q, usdaAbortCtrl.signal);
+                        const data = await API.withRetry(() => API.usda.search(q, signal), signal);
                         usdaAbortCtrl = null;
                         usdaBreaker.success();
                         if (gen !== myGen) return;
@@ -740,10 +742,11 @@ const FoodLogView = (() => {
                     offFetching  = true;
                     offDone      = false;
                     offAbortCtrl = new AbortController();
+                    const signal = offAbortCtrl.signal;
                     buildDropdown(); // show local results + spinner while fetching
 
                     try {
-                        const data = await API.OFF.search(q, 1, offAbortCtrl.signal);
+                        const data = await API.withRetry(() => API.OFF.search(q, 1, signal), signal);
                         offAbortCtrl = null;
                         offBreaker.success();
                         if (gen !== myGen) return;

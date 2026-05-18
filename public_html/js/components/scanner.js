@@ -80,13 +80,16 @@ const BarcodeScanner = (() => {
     }
 
     async function lookupBarcode(barcode) {
-        try {
-            const data = await API.OFF.barcode(barcode);
-            if (data.status !== 1 || !data.product) return null;
-            return mapProduct(data.product, barcode);
-        } catch (_) {
-            return null;
+        for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+                const data = await API.OFF.barcode(barcode);
+                if (data.status !== 1 || !data.product) return null;
+                return mapProduct(data.product, barcode);
+            } catch (_) {
+                if (attempt === 0) await new Promise(r => setTimeout(r, 1000));
+            }
         }
+        return null;
     }
 
     function mapProduct(p, barcode) {
