@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/helpers/mailer.php';
+
 // $resource, $sub, $method set by index.php
 
 if ($method === 'GET') {
@@ -17,10 +19,23 @@ if ($method === 'GET') {
     json_response([
         'profile'        => $profile,
         'current_weight' => $current_weight,
+        'email'          => $_SESSION['email'] ?? '',
     ]);
 }
 
 if ($method === 'PUT') {
+    $db = get_db();
+
+    if ($sub === 'email') {
+        changeEmail($db);
+    }
+
+    if ($sub === 'password') {
+        changePassword($db);
+    }
+
+    // ── Main profile save ──────────────────────────────────────────────────
+
     $data = get_json_body();
 
     $valid_activity = ['sedentary', 'lightly_active', 'moderately_active', 'very_active'];
@@ -34,7 +49,6 @@ if ($method === 'PUT') {
     $units    = in_array($data['units'] ?? '', $valid_units)
         ? $data['units'] : 'imperial';
 
-    $db   = get_db();
     $stmt = $db->prepare(
         'INSERT INTO user_profiles
             (user_id, display_name, age, sex,
@@ -102,3 +116,87 @@ if ($method === 'PUT') {
 }
 
 json_error('Method not allowed', 405);
+
+// ── Account settings helpers ───────────────────────────────────────────────
+
+function changeEmail(PDO $db): void {
+    $data = get_json_body();
+    require_fields($data, ['new_email', 'current_password']);
+
+    $newEmail = strtolower(trim($data['new_email']));
+    if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+        json_error('Invalid email address');
+    }
+
+    $stmt = $db->prepare('SELECT password_hash, email FROM users WHERE id = ?');
+    $stmt->execute([CURRENT_USER_ID]);
+    $user = $stmt->fetch();
+
+    if (!$user || !$user['password_hash'] || !password_verify($data['current_password'], $user['password_hash'])) {
+        json_error('Current password is incorrect', 401);
+    }
+
+    if ($newEmail === strtolower($user['email'])) {
+        json_error('New email is the same as your current email');
+    }
+
+    $check = $db->prepare('SELECT id FROM users WHERE email = ? AND id != ?');
+    $check->execute([$newEmail, CURRENT_USER_ID]);
+    if ($check->fetch()) {
+        json_error('That email address is already in use');
+    }
+
+    $needsVerification = defined('REQUIRE_EMAIL_VERIFICATION') && REQUIRE_EMAIL_VERIFICATION;
+
+    if ($needsVerification) {
+        $token   = bin2hex(random_bytes(32));
+        $expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+        $db->prepare(
+            'UPDATE users SET pending_email = ?, pending_email_token = ?, pending_email_token_expires = ? WHERE id = ?'
+        )->execute([$newEmail, $token, $expires, CURRENT_USER_ID]);
+
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $link = 'https://' . $host . '/#verify-email?token=' . $token . '&change=1';
+        Mailer::send($newEmail, 'Confirm your new email address', implode("\n\n", [
+            'You requested an email address change on Health Tracker.',
+            'Click the link below to confirm your new address:',
+            $link,
+            'This link expires in 24 hours. Your current email stays active until you click it.',
+        ]));
+
+        json_response([
+            'message'           => 'Verification email sent to ' . $newEmail . '. Click the link to complete the change.',
+            'needs_verification' => true,
+        ]);
+    } else {
+        $db->prepare('UPDATE users SET email = ? WHERE id = ?')
+           ->execute([$newEmail, CURRENT_USER_ID]);
+        $_SESSION['email'] = $newEmail;
+
+        json_response(['message' => 'Email updated.', 'email' => $newEmail]);
+    }
+}
+
+function changePassword(PDO $db): void {
+    $data = get_json_body();
+    require_fields($data, ['current_password', 'new_password']);
+
+    if (strlen($data['new_password']) < 8) {
+        json_error('New password must be at least 8 characters');
+    }
+
+    $stmt = $db->prepare('SELECT password_hash FROM users WHERE id = ?');
+    $stmt->execute([CURRENT_USER_ID]);
+    $user = $stmt->fetch();
+
+    if (!$user || !$user['password_hash'] || !password_verify($data['current_password'], $user['password_hash'])) {
+        json_error('Current password is incorrect', 401);
+    }
+
+    $hash = password_hash($data['new_password'], PASSWORD_BCRYPT);
+    $db->prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+       ->execute([$hash, CURRENT_USER_ID]);
+
+    json_response(['message' => 'Password updated.']);
+}

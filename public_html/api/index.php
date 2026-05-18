@@ -42,6 +42,16 @@ register_shutdown_function(function(): void {
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/db.php';
 
+// Session setup — must happen before any output.
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'httponly' => true,
+    'samesite' => 'Strict',
+]);
+session_start();
+
 // Parse the request path, stripping the /api prefix.
 $uri    = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri    = preg_replace('#^/api#', '', $uri);
@@ -50,6 +60,18 @@ $parts  = array_values(array_filter(explode('/', trim($uri, '/'))));
 $resource = $parts[0] ?? '';
 $sub      = $parts[1] ?? null;   // numeric ID or sub-resource name
 $method   = $_SERVER['REQUEST_METHOD'];
+
+// Auth routes don't require a session.
+if ($resource === 'auth') {
+    require __DIR__ . '/auth.php';
+    exit;
+}
+
+// All other routes require a valid session.
+if (empty($_SESSION['user_id'])) {
+    json_error('Unauthenticated', 401);
+}
+define('CURRENT_USER_ID', (int)$_SESSION['user_id']);
 
 switch ($resource) {
     case 'dashboard':

@@ -1,7 +1,4 @@
 <?php
-// Placeholder until authentication is added. Every request runs as this user.
-const CURRENT_USER_ID = 1;
-
 function json_response($data, int $status = 200): void {
     http_response_code($status);
     header('Content-Type: application/json; charset=utf-8');

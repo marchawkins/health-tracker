@@ -366,7 +366,8 @@ a.food-entry:active { background: var(--color-bg); }
 /* ── Utility ─────────────────────────────────────────────── */
 .text-muted { color: var(--color-muted); font-size: 14px; }
 .loading    { color: var(--color-muted); text-align: center; padding: 24px; font-size: 14px; }
-.error      { color: var(--color-danger); font-size: 14px; padding: 8px 0; }
+.error       { color: var(--color-danger);  font-size: 14px; padding: 8px 0; }
+.success-msg { color: var(--color-success); font-size: 14px; padding: 8px 0; }
 
 /* ── Toast notifications ─────────────────────────────────── */
 #toast-container {
@@ -572,6 +573,61 @@ a.food-entry:active { background: var(--color-bg); }
     position: relative;
     z-index: 1;
     margin-top: 24px;
+}
+
+/* ── Account settings cards ──────────────────────────────── */
+.acct-card { margin-top: 12px; }
+
+.input-readonly {
+    background: var(--color-bg);
+    color: var(--color-muted);
+    cursor: default;
+}
+
+/* ── Auth views ──────────────────────────────────────────── */
+#app-main.no-nav { padding-bottom: var(--space); }
+
+.auth-card {
+    max-width: 420px;
+    margin: 24px auto 0;
+}
+
+.auth-card h2 {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--color-muted);
+}
+
+.auth-links a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: 16px;
+    color: var(--color-text);
+    background: #fff;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -1px;
+    border-color: var(--color-primary);
 }
 
 /* ── Desktop adjustments ─────────────────────────────────── */

@@ -43,9 +43,11 @@ const ProfileView = (() => {
         let profile = {};
         let currentWeightKg = null; // always stored as kg internally
 
+        let email = '';
         try {
             const resp = await API.profile.get();
             profile = resp.profile || {};
+            email   = resp.email   || '';
             if (resp.current_weight) {
                 const w = resp.current_weight;
                 currentWeightKg = w.unit === 'kg'
@@ -208,6 +210,52 @@ const ProfileView = (() => {
                     <button type="submit" class="btn btn-primary btn-block">Save Profile</button>
                 </div>
             </form>
+            <button id="profile-logout" class="btn btn-secondary btn-block" style="margin-top:8px;">Sign Out</button>
+
+            <div class="card acct-card">
+                <h2>Change Email</h2>
+                <div class="form-row">
+                    <label>Current Email</label>
+                    <input type="email" id="ce-current" value="${escHtml(email)}" readonly class="input-readonly">
+                </div>
+                <form id="ce-form" novalidate>
+                    <div class="form-row">
+                        <label for="ce-new">New Email</label>
+                        <input type="email" id="ce-new" name="new_email"
+                               autocomplete="email" inputmode="email">
+                    </div>
+                    <div class="form-row">
+                        <label for="ce-pass">Current Password</label>
+                        <input type="password" id="ce-pass" name="current_password"
+                               autocomplete="current-password">
+                    </div>
+                    <div id="ce-msg" style="display:none;margin-bottom:10px;font-size:14px;"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Save Email</button>
+                </form>
+            </div>
+
+            <div class="card acct-card">
+                <h2>Change Password</h2>
+                <form id="cp-form" novalidate>
+                    <div class="form-row">
+                        <label for="cp-cur">Current Password</label>
+                        <input type="password" id="cp-cur" name="current_password"
+                               autocomplete="current-password">
+                    </div>
+                    <div class="form-row">
+                        <label for="cp-new">New Password</label>
+                        <input type="password" id="cp-new" name="new_password"
+                               autocomplete="new-password" minlength="8">
+                    </div>
+                    <div class="form-row">
+                        <label for="cp-confirm">Confirm New Password</label>
+                        <input type="password" id="cp-confirm" name="confirm"
+                               autocomplete="new-password">
+                    </div>
+                    <div id="cp-msg" style="display:none;margin-bottom:10px;font-size:14px;"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Save Password</button>
+                </form>
+            </div>
         `;
 
         const form = document.getElementById('profile-form');
@@ -363,6 +411,95 @@ const ProfileView = (() => {
         });
 
         form.addEventListener('submit', handleSubmit);
+
+        document.getElementById('profile-logout').addEventListener('click', async () => {
+            const btn = document.getElementById('profile-logout');
+            btn.disabled = true;
+            try {
+                await API.auth.logout();
+            } catch (_) {}
+            App.setUser(null);
+            window.location.hash = '#login';
+        });
+
+        // ── Change Email ───────────────────────────────────────────────────
+
+        document.getElementById('ce-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const form = e.target;
+            const btn  = form.querySelector('[type="submit"]');
+            const msg  = document.getElementById('ce-msg');
+            msg.style.display = 'none';
+            btn.disabled    = true;
+            btn.textContent = 'Saving…';
+
+            try {
+                const result = await API.profile.changeEmail({
+                    new_email:        form.new_email.value.trim(),
+                    current_password: form.current_password.value,
+                });
+                if (result.needs_verification) {
+                    showAcctMsg('ce-msg', result.message, false);
+                    form.new_email.value        = '';
+                    form.current_password.value = '';
+                } else {
+                    document.getElementById('ce-current').value = result.email;
+                    form.new_email.value        = '';
+                    form.current_password.value = '';
+                    showAcctMsg('ce-msg', 'Email updated.', false);
+                }
+            } catch (err) {
+                showAcctMsg('ce-msg', err.message, true);
+            } finally {
+                btn.disabled    = false;
+                btn.textContent = 'Save Email';
+            }
+        });
+
+        // ── Change Password ────────────────────────────────────────────────
+
+        document.getElementById('cp-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            const form = e.target;
+            const btn  = form.querySelector('[type="submit"]');
+            const msg  = document.getElementById('cp-msg');
+            msg.style.display = 'none';
+
+            if (form.new_password.value !== form.confirm.value) {
+                showAcctMsg('cp-msg', 'New passwords do not match', true);
+                return;
+            }
+            if (form.new_password.value.length < 8) {
+                showAcctMsg('cp-msg', 'New password must be at least 8 characters', true);
+                return;
+            }
+
+            btn.disabled    = true;
+            btn.textContent = 'Saving…';
+
+            try {
+                await API.profile.changePassword({
+                    current_password: form.current_password.value,
+                    new_password:     form.new_password.value,
+                });
+                form.current_password.value = '';
+                form.new_password.value     = '';
+                form.confirm.value          = '';
+                showAcctMsg('cp-msg', 'Password updated.', false);
+            } catch (err) {
+                showAcctMsg('cp-msg', err.message, true);
+            } finally {
+                btn.disabled    = false;
+                btn.textContent = 'Save Password';
+            }
+        });
+    }
+
+    function showAcctMsg(elId, text, isError) {
+        const el = document.getElementById(elId);
+        el.textContent  = text;
+        el.className    = isError ? 'error' : 'success-msg';
+        el.style.display = 'block';
     }
 
     async function handleSubmit(e) {
