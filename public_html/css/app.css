@@ -575,6 +575,13 @@ a.food-entry:active { background: var(--color-bg); }
     margin-top: 24px;
 }
 
+/* ── Dashboard divider ───────────────────────────────────── */
+.dash-divider {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 10px 0 8px;
+}
+
 /* ── Account settings cards ──────────────────────────────── */
 .acct-card { margin-top: 12px; }
 

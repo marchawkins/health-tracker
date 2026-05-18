@@ -6,6 +6,30 @@ if ($method !== 'GET') json_error('Method not allowed', 405);
 $q = trim($_GET['q'] ?? '');
 if (strlen($q) < 2) json_response(['foods' => [], 'totalHits' => 0]);
 
+// Normalize cache key: lowercase, max 255 chars.
+$cacheKey    = mb_strtolower($q);
+$cacheable   = mb_strlen($cacheKey) <= 255;
+
+// ── Cache lookup ───────────────────────────────────────────────────────────
+$db = null;
+if ($cacheable) {
+    try {
+        $db    = get_db();
+        $cStmt = $db->prepare(
+            'SELECT results_json FROM usda_cache
+             WHERE query = ? AND created_at > DATE_SUB(NOW(), INTERVAL 90 DAY)'
+        );
+        $cStmt->execute([$cacheKey]);
+        $cached = $cStmt->fetchColumn();
+        if ($cached !== false) {
+            json_response(json_decode($cached, true));
+        }
+    } catch (Exception $e) {
+        $db = null; // DB unavailable — fall through to live call
+    }
+}
+
+// ── Live USDA call ─────────────────────────────────────────────────────────
 $payload = json_encode([
     'query'    => $q,
     'dataType' => ['SR Legacy', 'Foundation', 'Survey (FNDDS)'],
@@ -40,5 +64,17 @@ if ($status !== 200)               json_error('USDA API returned ' . $status, 50
 
 $data = json_decode($body, true);
 if ($data === null) json_error('Invalid JSON from USDA API', 502);
+
+// ── Store in cache (best-effort; never block the response on DB errors) ────
+if ($cacheable && $db !== null) {
+    try {
+        $db->prepare(
+            'INSERT INTO usda_cache (query, results_json, created_at)
+             VALUES (?, ?, NOW())
+             ON DUPLICATE KEY UPDATE results_json = VALUES(results_json),
+                                     created_at   = VALUES(created_at)'
+        )->execute([$cacheKey, $body]);
+    } catch (Exception $e) {}
+}
 
 json_response($data);

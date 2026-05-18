@@ -174,6 +174,16 @@ const ProfileView = (() => {
                         <label for="pf-gsod">Sodium mg (stay under)</label>
                         <input type="number" id="pf-gsod" name="goal_sodium_mg" min="0" step="1" placeholder="0" inputmode="numeric">
                     </div>
+                    <div class="macro-inputs">
+                        <div class="form-row">
+                            <label for="pf-gsteps">Steps (at least)</label>
+                            <input type="number" id="pf-gsteps" name="goal_steps" min="0" step="100" placeholder="7500" inputmode="numeric">
+                        </div>
+                        <div class="form-row">
+                            <label for="pf-gsleep">Sleep hours (at least)</label>
+                            <input type="number" id="pf-gsleep" name="goal_sleep_hours" min="0" max="24" step="0.5" placeholder="8" inputmode="decimal">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card">
@@ -285,7 +295,9 @@ const ProfileView = (() => {
         if (p.goal_fat_g)     form.goal_fat_g.value     = p.goal_fat_g;
         if (p.goal_protein_g) form.goal_protein_g.value = p.goal_protein_g;
         if (p.goal_fiber_g)   form.goal_fiber_g.value   = p.goal_fiber_g;
-        if (p.goal_sodium_mg) form.goal_sodium_mg.value = p.goal_sodium_mg;
+        if (p.goal_sodium_mg)   form.goal_sodium_mg.value   = p.goal_sodium_mg;
+        if (p.goal_steps)       form.goal_steps.value       = p.goal_steps;
+        if (p.goal_sleep_hours) form.goal_sleep_hours.value = p.goal_sleep_hours;
 
         if (p.quick_log_name)         form.quick_log_name.value         = p.quick_log_name;
         if (p.quick_log_serving_size) form.quick_log_serving_size.value = p.quick_log_serving_size;
@@ -527,7 +539,9 @@ const ProfileView = (() => {
             goal_fat_g:     form.goal_fat_g.value     ? parseInt(form.goal_fat_g.value)     : null,
             goal_protein_g: form.goal_protein_g.value ? parseInt(form.goal_protein_g.value) : null,
             goal_fiber_g:   form.goal_fiber_g.value   ? parseInt(form.goal_fiber_g.value)   : null,
-            goal_sodium_mg:        form.goal_sodium_mg.value        ? parseInt(form.goal_sodium_mg.value)           : null,
+            goal_sodium_mg:    form.goal_sodium_mg.value    ? parseInt(form.goal_sodium_mg.value)    : null,
+            goal_steps:        form.goal_steps.value        ? parseInt(form.goal_steps.value)        : null,
+            goal_sleep_hours:  form.goal_sleep_hours.value  ? parseFloat(form.goal_sleep_hours.value): null,
             quick_log_name:        form.quick_log_name.value.trim() || null,
             quick_log_serving_size: form.quick_log_serving_size.value.trim() || null,
             quick_log_calories:    form.quick_log_calories.value    ? parseFloat(form.quick_log_calories.value)    : null,

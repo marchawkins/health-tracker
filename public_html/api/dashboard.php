@@ -25,6 +25,7 @@ $food_summary = $stmt->fetch();
 
 $pstmt = $db->prepare(
     'SELECT goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg,
+            goal_steps, goal_sleep_hours,
             quick_log_name, quick_log_serving_size, quick_log_calories,
             quick_log_protein_g, quick_log_carbs_g, quick_log_fat_g
      FROM user_profiles WHERE user_id = ?'
@@ -33,12 +34,14 @@ $pstmt->execute([CURRENT_USER_ID]);
 $prefs = $pstmt->fetch() ?: null;
 
 $goals = $prefs ? [
-    'goal_calories'  => $prefs['goal_calories'],
-    'goal_carbs_g'   => $prefs['goal_carbs_g'],
-    'goal_fat_g'     => $prefs['goal_fat_g'],
-    'goal_protein_g' => $prefs['goal_protein_g'],
-    'goal_fiber_g'   => $prefs['goal_fiber_g'],
-    'goal_sodium_mg' => $prefs['goal_sodium_mg'],
+    'goal_calories'    => $prefs['goal_calories'],
+    'goal_carbs_g'     => $prefs['goal_carbs_g'],
+    'goal_fat_g'       => $prefs['goal_fat_g'],
+    'goal_protein_g'   => $prefs['goal_protein_g'],
+    'goal_fiber_g'     => $prefs['goal_fiber_g'],
+    'goal_sodium_mg'   => $prefs['goal_sodium_mg'],
+    'goal_steps'       => $prefs['goal_steps'],
+    'goal_sleep_hours' => $prefs['goal_sleep_hours'],
 ] : null;
 
 $quick_log = $prefs ? [
@@ -74,6 +77,23 @@ foreach ($hStmt->fetchAll() as $row) {
     }
 }
 
+// Today's steps and sleep from metric_logs (most recent entry per slug)
+$actStmt = $db->prepare(
+    'SELECT md.slug, ml.value_numeric
+     FROM metric_logs ml
+     JOIN metric_definitions md ON md.id = ml.metric_definition_id
+     WHERE ml.user_id = ? AND DATE(ml.logged_at) = ? AND md.slug IN (\'steps\', \'sleep_hours\')
+     ORDER BY ml.logged_at DESC'
+);
+$actStmt->execute([CURRENT_USER_ID, $date]);
+
+$stepsToday = null;
+$sleepToday = null;
+foreach ($actStmt->fetchAll() as $row) {
+    if ($row['slug'] === 'steps'       && $stepsToday === null) $stepsToday = (float)$row['value_numeric'];
+    if ($row['slug'] === 'sleep_hours' && $sleepToday === null) $sleepToday = (float)$row['value_numeric'];
+}
+
 // Individual entries for the requested day, ordered by meal sequence then time
 $stmt = $db->prepare(
     'SELECT * FROM food_logs
@@ -90,4 +110,6 @@ json_response([
     'goals'        => $goals,
     'quick_log'    => $quick_log,
     'water'        => ['consumed_oz' => $consumedOz, 'goal_oz' => $goalOz],
+    'steps'        => $stepsToday,
+    'sleep_hours'  => $sleepToday,
 ]);

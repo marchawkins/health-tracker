@@ -7,6 +7,8 @@ const App = (() => {
         dashboard:       DashboardView,
         food:            FoodLogView,
         weight:          WeightLogView,
+        steps:           StepsLogView,
+        sleep:           SleepLogView,
         profile:         ProfileView,
         login:           LoginView,
         register:        RegisterView,
