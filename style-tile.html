@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Tracker — Style Tile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,700;1,400&family=Satisfy&family=Karla:wght@400;600;700&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Palette ── */
+  :root {
+    --parchment:    #E8D9C0;
+    --kraft:        #C9A87C;
+    --cream:        #F5ECD8;
+    --brown-dark:   #2C1A0E;
+    --brown-mid:    #5C3D1E;
+    --brown-light:  #8B6240;
+    --terracotta:   #C4522A;
+    --burnt-orange: #C4762A;
+    --harvest-gold: #D4A017;
+    --avocado:      #6B7A3A;
+    --avocado-dark: #4A5628;
+    --dusty-teal:   #4A7A72;
+    --rust:         #8B2E0E;
+  }
+
+  /* ── Grain texture via SVG noise ── */
+  body {
+    background-color: var(--parchment);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+    font-family: 'Karla', sans-serif;
+    color: var(--brown-dark);
+    padding: 40px 24px 80px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Section utility ── */
+  .section { margin-bottom: 56px; }
+  .section-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--kraft);
+  }
+
+  /* ── Flourish divider ── */
+  .flourish {
+    text-align: center;
+    color: var(--brown-light);
+    font-size: 22px;
+    margin: 8px 0 28px;
+    opacity: 0.6;
+    letter-spacing: 6px;
+  }
+
+  /* ══════════════════════════════════
+     HEADER
+  ══════════════════════════════════ */
+  .tile-header {
+    text-align: center;
+    margin-bottom: 52px;
+    padding: 40px 24px;
+    background: var(--brown-dark);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tile-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .tile-header .eyebrow {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--harvest-gold);
+    margin-bottom: 10px;
+  }
+  .tile-header h1 {
+    font-family: 'Satisfy', cursive;
+    font-size: 54px;
+    color: var(--cream);
+    line-height: 1;
+    margin-bottom: 6px;
+    text-shadow: 2px 3px 0 var(--rust);
+  }
+  .tile-header .subtitle {
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--kraft);
+  }
+  .header-ornament {
+    color: var(--harvest-gold);
+    font-size: 18px;
+    margin-top: 16px;
+    opacity: 0.7;
+    letter-spacing: 8px;
+  }
+
+  /* ══════════════════════════════════
+     COLOR PALETTE
+  ══════════════════════════════════ */
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+  }
+  .swatch {
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(44,26,14,0.15);
+  }
+  .swatch-color {
+    height: 70px;
+  }
+  .swatch-info {
+    background: var(--cream);
+    padding: 8px 10px;
+    border-top: 1px solid rgba(44,26,14,0.08);
+  }
+  .swatch-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--brown-mid);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .swatch-hex {
+    font-family: 'Karla', monospace;
+    font-size: 11px;
+    color: var(--brown-light);
+  }
+
+  /* ══════════════════════════════════
+     TYPOGRAPHY
+  ══════════════════════════════════ */
+  .type-specimens { display: flex; flex-direction: column; gap: 24px; }
+  .type-specimen {
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 20px 24px;
+    box-shadow: 0 2px 8px rgba(44,26,14,0.10);
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+  }
+  .type-meta {
+    min-width: 130px;
+    flex-shrink: 0;
+  }
+  .type-role {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    display: block;
+    margin-bottom: 3px;
+  }
+  .type-font-name {
+    font-size: 11px;
+    color: var(--terracotta);
+    font-weight: 600;
+  }
+
+  .type-app-title {
+    font-family: 'Satisfy', cursive;
+    font-size: 42px;
+    color: var(--brown-dark);
+    line-height: 1;
+  }
+  .type-display-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    color: var(--terracotta);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+  .type-display-num span {
+    font-size: 28px;
+    color: var(--brown-light);
+  }
+  .type-heading {
+    font-family: 'Oswald', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--brown-dark);
+  }
+  .type-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--avocado-dark);
+  }
+  .type-body {
+    font-family: 'Karla', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--brown-mid);
+  }
+  .type-caption {
+    font-family: 'Karla', sans-serif;
+    font-size: 12px;
+    color: var(--brown-light);
+  }
+
+  /* ══════════════════════════════════
+     UI COMPONENTS
+  ══════════════════════════════════ */
+  .components-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 600px) { .components-grid { grid-template-columns: 1fr; } }
+
+  /* Card */
+  .demo-card {
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(44,26,14,0.14), inset 0 1px 0 rgba(255,255,255,0.6);
+    border: 1px solid rgba(139,98,64,0.2);
+    position: relative;
+  }
+  .demo-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(to right, var(--terracotta), var(--harvest-gold));
+    border-radius: 0 0 4px 4px;
+  }
+  .card-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    margin-bottom: 8px;
+  }
+  .card-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--terracotta);
+    line-height: 1;
+  }
+  .card-unit {
+    font-family: 'Oswald', sans-serif;
+    font-size: 14px;
+    color: var(--brown-light);
+    margin-left: 4px;
+  }
+  .card-sub {
+    font-family: 'Karla', sans-serif;
+    font-size: 12px;
+    color: var(--brown-light);
+    margin-top: 6px;
+  }
+
+  /* Progress bar */
+  .demo-progress { padding: 20px; background: var(--cream); border-radius: 4px; box-shadow: 0 3px 10px rgba(44,26,14,0.12); border: 1px solid rgba(139,98,64,0.2); }
+  .progress-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .progress-label { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--brown-light); }
+  .progress-vals { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--brown-dark); letter-spacing: 0.05em; }
+  .progress-track {
+    background: rgba(44,26,14,0.1);
+    border-radius: 2px;
+    height: 10px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(44,26,14,0.2);
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--terracotta), var(--harvest-gold));
+  }
+  .progress-fill.protein { background: linear-gradient(to right, var(--avocado-dark), var(--avocado)); width: 72%; }
+  .progress-fill.carbs   { background: linear-gradient(to right, var(--burnt-orange), var(--harvest-gold)); width: 55%; }
+  .progress-fill.fat     { background: linear-gradient(to right, var(--dusty-teal), #6AADA6); width: 40%; }
+  .progress-fill.calories { width: 78%; }
+
+  /* Buttons */
+  .button-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 3px;
+    padding: 12px 22px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
+    background: var(--terracotta);
+    color: var(--cream);
+    box-shadow: 0 3px 0 var(--rust), 0 4px 8px rgba(44,26,14,0.2);
+  }
+  .btn-primary:active { box-shadow: 0 1px 0 var(--rust); }
+  .btn-secondary {
+    background: var(--avocado);
+    color: var(--cream);
+    box-shadow: 0 3px 0 var(--avocado-dark), 0 4px 8px rgba(44,26,14,0.2);
+  }
+  .btn-secondary:active { box-shadow: 0 1px 0 var(--avocado-dark); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--brown-mid);
+    border: 1.5px solid var(--kraft);
+    box-shadow: none;
+    padding: 10px 20px;
+  }
+  .btn-ghost:hover { border-color: var(--brown-mid); }
+
+  /* Nav bar */
+  .demo-nav {
+    background: var(--brown-dark);
+    border-radius: 4px;
+    padding: 0 4px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(44,26,14,0.3);
+    grid-column: 1 / -1;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 4px;
+    gap: 5px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+  }
+  .nav-item.active { background: rgba(212,160,23,0.12); }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 20%; right: 20%;
+    height: 2px;
+    background: linear-gradient(to right, var(--terracotta), var(--harvest-gold));
+    border-radius: 0 0 2px 2px;
+  }
+  .nav-icon { font-size: 20px; line-height: 1; }
+  .nav-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--kraft);
+  }
+  .nav-item.active .nav-label { color: var(--harvest-gold); }
+
+  /* Input */
+  .demo-input-wrap { grid-column: 1 / -1; background: var(--cream); border-radius: 4px; padding: 20px; box-shadow: 0 3px 10px rgba(44,26,14,0.12); border: 1px solid rgba(139,98,64,0.2); }
+  .input-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .field-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+  .field-label { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--brown-light); }
+  .field-input {
+    font-family: 'Karla', sans-serif;
+    font-size: 14px;
+    color: var(--brown-dark);
+    background: var(--parchment);
+    border: 1.5px solid var(--kraft);
+    border-radius: 3px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    box-shadow: inset 0 1px 3px rgba(44,26,14,0.08);
+  }
+  .field-input:focus { border-color: var(--terracotta); }
+  .field-input::placeholder { color: var(--kraft); }
+
+  /* Tag / badge */
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 2px;
+  }
+  .badge-breakfast { background: rgba(196,82,42,0.12); color: var(--terracotta); border: 1px solid rgba(196,82,42,0.3); }
+  .badge-lunch     { background: rgba(212,160,23,0.12); color: #A07810; border: 1px solid rgba(212,160,23,0.3); }
+  .badge-dinner    { background: rgba(107,122,58,0.12); color: var(--avocado-dark); border: 1px solid rgba(107,122,58,0.3); }
+  .badge-snack     { background: rgba(74,122,114,0.12); color: var(--dusty-teal); border: 1px solid rgba(74,122,114,0.3); }
+
+  /* Toast */
+  .demo-toast {
+    background: var(--brown-dark);
+    color: var(--cream);
+    border-radius: 4px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 16px rgba(44,26,14,0.3);
+    grid-column: 1 / -1;
+    border-left: 4px solid var(--harvest-gold);
+  }
+  .toast-icon { font-size: 20px; }
+  .toast-msg { font-family: 'Karla', sans-serif; font-size: 14px; }
+  .toast-msg strong { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; display: block; color: var(--harvest-gold); margin-bottom: 2px; }
+
+  /* Section divider flourish */
+  .divider-flourish {
+    text-align: center;
+    margin: 8px 0;
+    position: relative;
+    color: var(--brown-light);
+  }
+  .divider-flourish::before,
+  .divider-flourish::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 36%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--kraft));
+  }
+  .divider-flourish::before { left: 0; background: linear-gradient(to right, transparent, var(--kraft)); }
+  .divider-flourish::after  { right: 0; background: linear-gradient(to left, transparent, var(--kraft)); }
+  .divider-flourish svg { width: 40px; height: 16px; opacity: 0.55; }
+
+  /* ── Dashboard mini preview ── */
+  .dash-preview {
+    background: var(--parchment);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(44,26,14,0.2), 0 0 0 1px rgba(139,98,64,0.25);
+    grid-column: 1 / -1;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  }
+  .dash-topbar {
+    background: var(--brown-dark);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .dash-app-name {
+    font-family: 'Satisfy', cursive;
+    font-size: 24px;
+    color: var(--cream);
+    text-shadow: 1px 2px 0 var(--rust);
+  }
+  .dash-date-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    color: var(--kraft);
+    letter-spacing: 0.05em;
+  }
+  .dash-date-nav .arrow { color: var(--harvest-gold); cursor: pointer; font-size: 16px; }
+  .dash-body { padding: 18px; }
+  .dash-date-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .dash-stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .dash-stat {
+    background: var(--cream);
+    border-radius: 4px;
+    padding: 14px;
+    box-shadow: 0 2px 6px rgba(44,26,14,0.1);
+    border: 1px solid rgba(139,98,64,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .dash-stat::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .dash-stat.calories::after { background: linear-gradient(to right, var(--terracotta), var(--harvest-gold)); }
+  .dash-stat.steps::after    { background: linear-gradient(to right, var(--avocado-dark), var(--avocado)); }
+  .dash-stat.water::after    { background: linear-gradient(to right, var(--dusty-teal), #6AADA6); }
+  .dash-stat.sleep::after    { background: linear-gradient(to right, var(--brown-mid), var(--brown-light)); }
+  .dash-stat-label { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brown-light); margin-bottom: 4px; }
+  .dash-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--brown-dark); line-height: 1; }
+  .dash-stat-val .unit { font-size: 16px; color: var(--brown-light); }
+  .dash-stat-sub { font-family: 'Karla', sans-serif; font-size: 11px; color: var(--brown-light); margin-top: 4px; }
+  .dash-macro-section { margin-bottom: 16px; }
+  .dash-macro-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .dash-macro-bars { display: flex; flex-direction: column; gap: 10px; background: var(--cream); border-radius: 4px; padding: 14px; border: 1px solid rgba(139,98,64,0.15); box-shadow: 0 2px 6px rgba(44,26,14,0.08); }
+  .macro-row { display: flex; align-items: center; gap: 10px; }
+  .macro-name { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brown-light); width: 58px; flex-shrink: 0; }
+  .macro-bar-track { flex: 1; background: rgba(44,26,14,0.08); border-radius: 2px; height: 8px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(44,26,14,0.15); }
+  .macro-bar-fill { height: 100%; border-radius: 2px; }
+  .macro-bar-fill.p { background: linear-gradient(to right, var(--avocado-dark), var(--avocado)); width: 68%; }
+  .macro-bar-fill.c { background: linear-gradient(to right, var(--burnt-orange), var(--harvest-gold)); width: 52%; }
+  .macro-bar-fill.f { background: linear-gradient(to right, var(--dusty-teal), #6AADA6); width: 38%; }
+  .macro-val { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--brown-dark); width: 50px; text-align: right; letter-spacing: 0.02em; }
+
+  /* ornament SVG inline */
+  .ornament-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    align-items: center;
+    opacity: 0.45;
+    margin: 6px 0;
+    color: var(--brown-mid);
+    font-size: 18px;
+    letter-spacing: 4px;
+  }
+
+  /* ── Footer note ── */
+  .tile-footer {
+    margin-top: 60px;
+    text-align: center;
+    font-family: 'Oswald', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="tile-header">
+  <div class="eyebrow">Visual Style Tile · Health Tracker</div>
+  <h1>Vitale</h1>
+  <div class="subtitle">70s Earth Tone Retro · Mobile Web App</div>
+  <div class="header-ornament">✦ ✦ ✦</div>
+</div>
+
+
+<!-- ══ COLOR PALETTE ══ -->
+<div class="section">
+  <div class="section-label">Color Palette</div>
+  <div class="palette-grid">
+
+    <div class="swatch">
+      <div class="swatch-color" style="background:#E8D9C0;"></div>
+      <div class="swatch-info"><span class="swatch-name">Parchment</span><span class="swatch-hex">#E8D9C0</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#F5ECD8;"></div>
+      <div class="swatch-info"><span class="swatch-name">Cream</span><span class="swatch-hex">#F5ECD8</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#C9A87C;"></div>
+      <div class="swatch-info"><span class="swatch-name">Kraft</span><span class="swatch-hex">#C9A87C</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#8B6240;"></div>
+      <div class="swatch-info"><span class="swatch-name">Brown Lt</span><span class="swatch-hex">#8B6240</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#5C3D1E;"></div>
+      <div class="swatch-info"><span class="swatch-name">Brown Mid</span><span class="swatch-hex">#5C3D1E</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#2C1A0E;"></div>
+      <div class="swatch-info"><span class="swatch-name">Brown Dk</span><span class="swatch-hex">#2C1A0E</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#C4522A;"></div>
+      <div class="swatch-info"><span class="swatch-name">Terracotta</span><span class="swatch-hex">#C4522A</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#8B2E0E;"></div>
+      <div class="swatch-info"><span class="swatch-name">Rust</span><span class="swatch-hex">#8B2E0E</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#C4762A;"></div>
+      <div class="swatch-info"><span class="swatch-name">Burnt Org</span><span class="swatch-hex">#C4762A</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#D4A017;"></div>
+      <div class="swatch-info"><span class="swatch-name">Harvest Gld</span><span class="swatch-hex">#D4A017</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#6B7A3A;"></div>
+      <div class="swatch-info"><span class="swatch-name">Avocado</span><span class="swatch-hex">#6B7A3A</span></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#4A7A72;"></div>
+      <div class="swatch-info"><span class="swatch-name">Dusty Teal</span><span class="swatch-hex">#4A7A72</span></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider-flourish">
+  <svg viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 10 C15 4, 25 4, 40 10 C55 16, 65 16, 75 10" stroke="#8B6240" stroke-width="1.2" fill="none"/>
+    <circle cx="40" cy="10" r="2.5" fill="#8B6240"/>
+    <circle cx="10" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+    <circle cx="70" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+  </svg>
+</div>
+
+
+<!-- ══ TYPOGRAPHY ══ -->
+<div class="section">
+  <div class="section-label">Typography</div>
+  <div class="type-specimens">
+
+    <div class="type-specimen">
+      <div class="type-meta">
+        <span class="type-role">App Title / Script</span>
+        <span class="type-font-name">Satisfy</span>
+      </div>
+      <div class="type-app-title">Vitale</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-meta">
+        <span class="type-role">Big Numbers</span>
+        <span class="type-font-name">Bebas Neue</span>
+      </div>
+      <div class="type-display-num">1,840 <span>/ 2,200 kcal</span></div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-meta">
+        <span class="type-role">Section Headers</span>
+        <span class="type-font-name">Oswald 600</span>
+      </div>
+      <div class="type-heading">Today's Log</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-meta">
+        <span class="type-role">UI Labels</span>
+        <span class="type-font-name">Oswald 500</span>
+      </div>
+      <div class="type-label">Calories &nbsp;·&nbsp; Protein &nbsp;·&nbsp; Carbs &nbsp;·&nbsp; Fat</div>
+    </div>
+
+    <div class="type-specimen" style="align-items: flex-start;">
+      <div class="type-meta" style="padding-top:3px;">
+        <span class="type-role">Body / Notes</span>
+        <span class="type-font-name">Karla 400</span>
+      </div>
+      <div class="type-body">Grilled chicken breast with roasted sweet potato and a side salad. Good protein day — hit the goal before dinner.</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="type-meta">
+        <span class="type-role">Captions / Meta</span>
+        <span class="type-font-name">Karla 400</span>
+      </div>
+      <div class="type-caption">Logged at 12:34 pm &nbsp;·&nbsp; Lunch &nbsp;·&nbsp; 1 serving</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider-flourish">
+  <svg viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 10 C15 4, 25 4, 40 10 C55 16, 65 16, 75 10" stroke="#8B6240" stroke-width="1.2" fill="none"/>
+    <circle cx="40" cy="10" r="2.5" fill="#8B6240"/>
+    <circle cx="10" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+    <circle cx="70" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+  </svg>
+</div>
+
+
+<!-- ══ UI COMPONENTS ══ -->
+<div class="section">
+  <div class="section-label">UI Components</div>
+  <div class="components-grid">
+
+    <!-- Stat cards -->
+    <div class="demo-card">
+      <div class="card-title">Calories</div>
+      <div><span class="card-value">1,840</span><span class="card-unit">kcal</span></div>
+      <div class="card-sub">360 remaining · goal 2,200</div>
+    </div>
+
+    <div class="demo-card" style="--c:var(--avocado)">
+      <div class="card-title">Steps Today</div>
+      <div><span class="card-value" style="color:var(--avocado);">7,432</span><span class="card-unit">steps</span></div>
+      <div class="card-sub">74% of 10,000 goal</div>
+    </div>
+
+    <!-- Macro progress bars -->
+    <div class="demo-progress" style="grid-column: 1 / -1;">
+      <div class="progress-label-row">
+        <span class="progress-label">Protein</span>
+        <span class="progress-vals">128g / 180g</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill protein"></div></div>
+
+      <div class="progress-label-row">
+        <span class="progress-label">Carbs</span>
+        <span class="progress-vals">138g / 250g</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill carbs"></div></div>
+
+      <div class="progress-label-row">
+        <span class="progress-label">Fat</span>
+        <span class="progress-vals">30g / 75g</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill fat"></div></div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="demo-card" style="grid-column: 1 / -1;">
+      <div class="card-title" style="margin-bottom:16px;">Buttons</div>
+      <div class="button-row">
+        <button class="btn btn-primary">Log Food</button>
+        <button class="btn btn-secondary">Add Metric</button>
+        <button class="btn btn-ghost">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Meal type badges -->
+    <div class="demo-card">
+      <div class="card-title" style="margin-bottom:14px;">Meal Types</div>
+      <div class="badge-row">
+        <span class="badge badge-breakfast">Breakfast</span>
+        <span class="badge badge-lunch">Lunch</span>
+        <span class="badge badge-dinner">Dinner</span>
+        <span class="badge badge-snack">Snack</span>
+      </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="demo-toast">
+      <span class="toast-icon">✓</span>
+      <div class="toast-msg">
+        <strong>Food Logged</strong>
+        Grilled Chicken added to Lunch
+      </div>
+    </div>
+
+    <!-- Form inputs -->
+    <div class="demo-input-wrap">
+      <div class="card-title" style="margin-bottom:14px;">Form Inputs</div>
+      <div class="input-row">
+        <div class="field-group">
+          <label class="field-label">Food Name</label>
+          <input class="field-input" type="text" placeholder="Search or type…" value="Grilled Chicken">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Calories</label>
+          <input class="field-input" type="text" placeholder="0" value="285">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Serving Size</label>
+          <input class="field-input" type="text" placeholder="e.g. 4 oz" value="4 oz">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider-flourish">
+  <svg viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 10 C15 4, 25 4, 40 10 C55 16, 65 16, 75 10" stroke="#8B6240" stroke-width="1.2" fill="none"/>
+    <circle cx="40" cy="10" r="2.5" fill="#8B6240"/>
+    <circle cx="10" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+    <circle cx="70" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+  </svg>
+</div>
+
+
+<!-- ══ DASHBOARD PREVIEW ══ -->
+<div class="section">
+  <div class="section-label">Dashboard Preview — Compositional Direction</div>
+  <div class="components-grid">
+    <div class="dash-preview">
+
+      <!-- Top bar -->
+      <div class="dash-topbar">
+        <div class="dash-app-name">Vitale</div>
+        <div class="dash-date-nav">
+          <span class="arrow">‹</span>
+          <span>Monday, May 18</span>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="dash-body">
+
+        <div class="dash-stat-row">
+          <div class="dash-stat calories">
+            <div class="dash-stat-label">Calories</div>
+            <div class="dash-stat-val">1,840 <span class="unit">kcal</span></div>
+            <div class="dash-stat-sub">360 remaining</div>
+          </div>
+          <div class="dash-stat steps">
+            <div class="dash-stat-label">Steps</div>
+            <div class="dash-stat-val">7,432</div>
+            <div class="dash-stat-sub">74% of goal</div>
+          </div>
+          <div class="dash-stat water">
+            <div class="dash-stat-label">Water</div>
+            <div class="dash-stat-val">48 <span class="unit">oz</span></div>
+            <div class="dash-stat-sub">of 92 oz goal</div>
+          </div>
+          <div class="dash-stat sleep">
+            <div class="dash-stat-label">Sleep</div>
+            <div class="dash-stat-val">7.5 <span class="unit">hr</span></div>
+            <div class="dash-stat-sub">Goal: 8 hr</div>
+          </div>
+        </div>
+
+        <!-- Ornament divider -->
+        <div class="ornament-row">· · ✦ · ·</div>
+
+        <div class="dash-macro-section">
+          <div class="dash-macro-title">Macros</div>
+          <div class="dash-macro-bars">
+            <div class="macro-row">
+              <span class="macro-name">Protein</span>
+              <div class="macro-bar-track"><div class="macro-bar-fill p"></div></div>
+              <span class="macro-val">128g</span>
+            </div>
+            <div class="macro-row">
+              <span class="macro-name">Carbs</span>
+              <div class="macro-bar-track"><div class="macro-bar-fill c"></div></div>
+              <span class="macro-val">138g</span>
+            </div>
+            <div class="macro-row">
+              <span class="macro-name">Fat</span>
+              <div class="macro-bar-track"><div class="macro-bar-fill f"></div></div>
+              <span class="macro-val">30g</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Nav bar -->
+      <div class="demo-nav">
+        <div class="nav-item active">
+          <span class="nav-icon">⌂</span>
+          <span class="nav-label">Dashboard</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">🍽</span>
+          <span class="nav-label">Food</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">⚖</span>
+          <span class="nav-label">Weight</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Metrics</span>
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">◎</span>
+          <span class="nav-label">Profile</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ ICON EXPLORATION ══ -->
+<div class="section">
+  <div class="section-label">Icon Exploration — 1 &amp; 2 Color Options</div>
+
+  <!-- Style A: Solid Silhouette — single color -->
+  <div class="icon-style-block">
+    <div class="icon-style-label">
+      <span class="icon-style-name">Style A — Solid Silhouette</span>
+      <span class="icon-style-desc">Single color · fills only · maximum legibility</span>
+    </div>
+    <div class="icon-row">
+
+      <!-- Home/Dashboard -->
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 3L2 14h4v15h8v-9h4v9h8V14h4L16 3z" fill="#2C1A0E"/>
+        </svg>
+        <span class="icon-lbl">Home</span>
+      </div>
+
+      <!-- Food/Fork & Knife -->
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 2v8c0 2.2 1.5 4 3.5 4.5V30h3V14.5c2-.5 3.5-2.3 3.5-4.5V2h-2.5v7h-1V2h-2.5v7h-1V2H10z" fill="#2C1A0E"/>
+          <path d="M22 2v28h3V18h2V2h-2v10h-1V2h-2z" fill="#2C1A0E"/>
+        </svg>
+        <span class="icon-lbl">Food</span>
+      </div>
+
+      <!-- Weight/Scale -->
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="26" width="24" height="3" rx="1.5" fill="#2C1A0E"/>
+          <path d="M7 26l3-14h12l3 14H7z" fill="#2C1A0E" opacity="0.5"/>
+          <path d="M7 26l3-14h12l3 14H7z" stroke="#2C1A0E" stroke-width="1.5" fill="none"/>
+          <circle cx="16" cy="10" r="4" fill="#2C1A0E"/>
+          <path d="M13.5 9.5l2 2 3-3" stroke="#F5ECD8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="icon-lbl">Weight</span>
+      </div>
+
+      <!-- Metrics/Chart -->
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="24" width="26" height="2.5" rx="1" fill="#2C1A0E"/>
+          <rect x="5" y="14" width="5" height="10" rx="1" fill="#2C1A0E"/>
+          <rect x="13" y="9" width="5" height="15" rx="1" fill="#2C1A0E"/>
+          <rect x="21" y="17" width="5" height="7" rx="1" fill="#2C1A0E"/>
+        </svg>
+        <span class="icon-lbl">Metrics</span>
+      </div>
+
+      <!-- Profile/Person -->
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="10" r="6" fill="#2C1A0E"/>
+          <path d="M4 30c0-6.6 5.4-12 12-12s12 5.4 12 12H4z" fill="#2C1A0E"/>
+        </svg>
+        <span class="icon-lbl">Profile</span>
+      </div>
+
+      <!-- Steps -->
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 28c0-2.2.9-4 2.5-5.5L16 19l3.5-3.5C21.1 14 22 12.2 22 10c0-3.3-2.7-6-6-6S10 6.7 10 10" stroke="#2C1A0E" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          <ellipse cx="12" cy="26" rx="4.5" ry="3" fill="#2C1A0E"/>
+          <ellipse cx="20" cy="20" rx="4.5" ry="3" transform="rotate(-20 20 20)" fill="#2C1A0E"/>
+        </svg>
+        <span class="icon-lbl">Steps</span>
+      </div>
+
+      <!-- Sleep/Moon -->
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 6A12 12 0 1 1 8 26 9 9 0 0 0 20 6z" fill="#2C1A0E"/>
+          <circle cx="22" cy="8" r="1.5" fill="#2C1A0E" opacity="0.4"/>
+          <circle cx="26" cy="14" r="1" fill="#2C1A0E" opacity="0.3"/>
+          <circle cx="24" cy="4" r="1" fill="#2C1A0E" opacity="0.3"/>
+        </svg>
+        <span class="icon-lbl">Sleep</span>
+      </div>
+
+      <!-- Water/Drop -->
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 4C16 4 6 14 6 20a10 10 0 0 0 20 0C26 14 16 4 16 4z" fill="#2C1A0E"/>
+          <path d="M11 22a6 6 0 0 1 5-6" stroke="#F5ECD8" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.6"/>
+        </svg>
+        <span class="icon-lbl">Water</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider-flourish" style="margin: 24px 0;">
+    <svg viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 10 C15 4, 25 4, 40 10 C55 16, 65 16, 75 10" stroke="#8B6240" stroke-width="1.2" fill="none"/>
+      <circle cx="40" cy="10" r="2.5" fill="#8B6240"/>
+      <circle cx="10" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+      <circle cx="70" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+    </svg>
+  </div>
+
+  <!-- Style B: Outline — single color -->
+  <div class="icon-style-block">
+    <div class="icon-style-label">
+      <span class="icon-style-name">Style B — Outline / Line</span>
+      <span class="icon-style-desc">Single color · strokes only · lighter feel</span>
+    </div>
+    <div class="icon-row">
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 3L2 14h4v15h8v-9h4v9h8V14h4L16 3z" stroke="#2C1A0E" stroke-width="2" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span class="icon-lbl">Home</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 2v8c0 2.2 1.5 4 3.5 4.5V30h3V14.5c2-.5 3.5-2.3 3.5-4.5V2" stroke="#2C1A0E" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M13.5 2v9M16.5 2v9" stroke="#2C1A0E" stroke-width="2" stroke-linecap="round"/>
+          <path d="M22 2v28M22 12h2V2" stroke="#2C1A0E" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="icon-lbl">Food</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="26" width="24" height="3" rx="1.5" stroke="#2C1A0E" stroke-width="2" fill="none"/>
+          <path d="M7 26l3-14h12l3 14" stroke="#2C1A0E" stroke-width="2" stroke-linejoin="round" fill="none"/>
+          <circle cx="16" cy="10" r="4" stroke="#2C1A0E" stroke-width="2" fill="none"/>
+          <path d="M13.5 9.5l2 2 3-3" stroke="#2C1A0E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="icon-lbl">Weight</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="24" width="26" height="2.5" rx="1" stroke="#2C1A0E" stroke-width="1.5" fill="none"/>
+          <rect x="5" y="14" width="5" height="10" rx="1" stroke="#2C1A0E" stroke-width="2" fill="none"/>
+          <rect x="13" y="9" width="5" height="15" rx="1" stroke="#2C1A0E" stroke-width="2" fill="none"/>
+          <rect x="21" y="17" width="5" height="7" rx="1" stroke="#2C1A0E" stroke-width="2" fill="none"/>
+        </svg>
+        <span class="icon-lbl">Metrics</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="10" r="6" stroke="#2C1A0E" stroke-width="2" fill="none"/>
+          <path d="M4 30c0-6.6 5.4-12 12-12s12 5.4 12 12" stroke="#2C1A0E" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="icon-lbl">Profile</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="12" cy="26" rx="4.5" ry="3" stroke="#2C1A0E" stroke-width="2" fill="none"/>
+          <ellipse cx="20" cy="20" rx="4.5" ry="3" transform="rotate(-20 20 20)" stroke="#2C1A0E" stroke-width="2" fill="none"/>
+        </svg>
+        <span class="icon-lbl">Steps</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 6A12 12 0 1 1 8 26 9 9 0 0 0 20 6z" stroke="#2C1A0E" stroke-width="2" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span class="icon-lbl">Sleep</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 4C16 4 6 14 6 20a10 10 0 0 0 20 0C26 14 16 4 16 4z" stroke="#2C1A0E" stroke-width="2" stroke-linejoin="round" fill="none"/>
+          <path d="M11 22a6 6 0 0 1 5-6" stroke="#2C1A0E" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.5"/>
+        </svg>
+        <span class="icon-lbl">Water</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider-flourish" style="margin: 24px 0;">
+    <svg viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 10 C15 4, 25 4, 40 10 C55 16, 65 16, 75 10" stroke="#8B6240" stroke-width="1.2" fill="none"/>
+      <circle cx="40" cy="10" r="2.5" fill="#8B6240"/>
+      <circle cx="10" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+      <circle cx="70" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+    </svg>
+  </div>
+
+  <!-- Style C: Two-tone — dark body + gold accent -->
+  <div class="icon-style-block">
+    <div class="icon-style-label">
+      <span class="icon-style-name">Style C — Two-Tone</span>
+      <span class="icon-style-desc">Dark brown body · harvest gold accent detail</span>
+    </div>
+    <div class="icon-row">
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 3L2 14h4v15h8v-9h4v9h8V14h4L16 3z" fill="#2C1A0E"/>
+          <rect x="13" y="19" width="6" height="10" rx="1" fill="#D4A017" opacity="0.9"/>
+        </svg>
+        <span class="icon-lbl">Home</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 2v8c0 2.2 1.5 4 3.5 4.5V30h3V14.5c2-.5 3.5-2.3 3.5-4.5V2h-2.5v7h-1V2h-2.5v7h-1V2H10z" fill="#2C1A0E"/>
+          <path d="M22 2v28h3V18h2V2h-2v10h-1V2h-2z" fill="#2C1A0E"/>
+          <rect x="13" y="20" width="6" height="2" rx="1" fill="#D4A017"/>
+          <rect x="13" y="24" width="6" height="2" rx="1" fill="#D4A017" opacity="0.6"/>
+        </svg>
+        <span class="icon-lbl">Food</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="26" width="24" height="3" rx="1.5" fill="#2C1A0E"/>
+          <path d="M7 26l3-14h12l3 14H7z" fill="#2C1A0E" opacity="0.35"/>
+          <path d="M7 26l3-14h12l3 14H7z" stroke="#2C1A0E" stroke-width="1.5" fill="none"/>
+          <circle cx="16" cy="10" r="4" fill="#2C1A0E"/>
+          <path d="M13.5 9.5l2 2 3-3" stroke="#D4A017" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="icon-lbl">Weight</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="24" width="26" height="2.5" rx="1" fill="#2C1A0E"/>
+          <rect x="5" y="14" width="5" height="10" rx="1" fill="#2C1A0E" opacity="0.4"/>
+          <rect x="13" y="9" width="5" height="15" rx="1" fill="#2C1A0E"/>
+          <rect x="21" y="17" width="5" height="7" rx="1" fill="#2C1A0E" opacity="0.6"/>
+          <rect x="13" y="9" width="5" height="4" rx="1" fill="#D4A017"/>
+        </svg>
+        <span class="icon-lbl">Metrics</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="10" r="6" fill="#2C1A0E"/>
+          <path d="M4 30c0-6.6 5.4-12 12-12s12 5.4 12 12H4z" fill="#2C1A0E" opacity="0.35"/>
+          <path d="M4 30c0-6.6 5.4-12 12-12s12 5.4 12 12" stroke="#2C1A0E" stroke-width="1.5" fill="none"/>
+          <circle cx="16" cy="10" r="2.5" fill="#D4A017"/>
+        </svg>
+        <span class="icon-lbl">Profile</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="12" cy="26" rx="4.5" ry="3" fill="#2C1A0E"/>
+          <ellipse cx="20" cy="20" rx="4.5" ry="3" transform="rotate(-20 20 20)" fill="#2C1A0E" opacity="0.5"/>
+          <ellipse cx="20" cy="20" rx="4.5" ry="3" transform="rotate(-20 20 20)" fill="#D4A017" opacity="0.6"/>
+        </svg>
+        <span class="icon-lbl">Steps</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 6A12 12 0 1 1 8 26 9 9 0 0 0 20 6z" fill="#2C1A0E"/>
+          <circle cx="22" cy="8" r="1.8" fill="#D4A017"/>
+          <circle cx="26" cy="13" r="1.2" fill="#D4A017" opacity="0.6"/>
+        </svg>
+        <span class="icon-lbl">Sleep</span>
+      </div>
+
+      <div class="icon-cell">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 4C16 4 6 14 6 20a10 10 0 0 0 20 0C26 14 16 4 16 4z" fill="#2C1A0E"/>
+          <path d="M11 22a6 6 0 0 1 5-6" stroke="#D4A017" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="icon-lbl">Water</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider-flourish" style="margin: 24px 0;">
+    <svg viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5 10 C15 4, 25 4, 40 10 C55 16, 65 16, 75 10" stroke="#8B6240" stroke-width="1.2" fill="none"/>
+      <circle cx="40" cy="10" r="2.5" fill="#8B6240"/>
+      <circle cx="10" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+      <circle cx="70" cy="10" r="1.2" fill="#8B6240" opacity="0.5"/>
+    </svg>
+  </div>
+
+  <!-- Nav bar showing all three icon styles in context -->
+  <div class="icon-style-block">
+    <div class="icon-style-label">
+      <span class="icon-style-name">In Context — Nav Bar</span>
+      <span class="icon-style-desc">Active state uses terracotta accent</span>
+    </div>
+
+    <!-- Nav A: Silhouette -->
+    <p class="icon-context-note">Style A — Silhouette</p>
+    <div class="demo-nav" style="margin-bottom:12px;">
+      <div class="nav-item active">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M16 3L2 14h4v15h8v-9h4v9h8V14h4L16 3z" fill="#D4A017"/></svg>
+        <span class="nav-label" style="color:#D4A017;">Home</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M10 2v8c0 2.2 1.5 4 3.5 4.5V30h3V14.5c2-.5 3.5-2.3 3.5-4.5V2h-2.5v7h-1V2h-2.5v7h-1V2H10z" fill="#C9A87C"/><path d="M22 2v28h3V18h2V2h-2v10h-1V2h-2z" fill="#C9A87C"/></svg>
+        <span class="nav-label">Food</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect x="4" y="26" width="24" height="3" rx="1.5" fill="#C9A87C"/><path d="M7 26l3-14h12l3 14H7z" fill="#C9A87C" opacity="0.5"/><path d="M7 26l3-14h12l3 14H7z" stroke="#C9A87C" stroke-width="1.5" fill="none"/><circle cx="16" cy="10" r="4" fill="#C9A87C"/></svg>
+        <span class="nav-label">Weight</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect x="3" y="24" width="26" height="2.5" rx="1" fill="#C9A87C"/><rect x="5" y="14" width="5" height="10" rx="1" fill="#C9A87C"/><rect x="13" y="9" width="5" height="15" rx="1" fill="#C9A87C"/><rect x="21" y="17" width="5" height="7" rx="1" fill="#C9A87C"/></svg>
+        <span class="nav-label">Metrics</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="10" r="6" fill="#C9A87C"/><path d="M4 30c0-6.6 5.4-12 12-12s12 5.4 12 12H4z" fill="#C9A87C"/></svg>
+        <span class="nav-label">Profile</span>
+      </div>
+    </div>
+
+    <!-- Nav B: Outline -->
+    <p class="icon-context-note">Style B — Outline</p>
+    <div class="demo-nav" style="margin-bottom:12px;">
+      <div class="nav-item active">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M16 3L2 14h4v15h8v-9h4v9h8V14h4L16 3z" stroke="#D4A017" stroke-width="2" stroke-linejoin="round" fill="none"/></svg>
+        <span class="nav-label" style="color:#D4A017;">Home</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M10 2v8c0 2.2 1.5 4 3.5 4.5V30h3V14.5c2-.5 3.5-2.3 3.5-4.5V2" stroke="#8B6240" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M13.5 2v9M16.5 2v9" stroke="#8B6240" stroke-width="2" stroke-linecap="round"/><path d="M22 2v28M22 12h2V2" stroke="#8B6240" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        <span class="nav-label">Food</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect x="4" y="26" width="24" height="3" rx="1.5" stroke="#8B6240" stroke-width="2" fill="none"/><path d="M7 26l3-14h12l3 14" stroke="#8B6240" stroke-width="2" fill="none"/><circle cx="16" cy="10" r="4" stroke="#8B6240" stroke-width="2" fill="none"/></svg>
+        <span class="nav-label">Weight</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect x="3" y="24" width="26" height="2.5" rx="1" stroke="#8B6240" stroke-width="1.5" fill="none"/><rect x="5" y="14" width="5" height="10" rx="1" stroke="#8B6240" stroke-width="2" fill="none"/><rect x="13" y="9" width="5" height="15" rx="1" stroke="#8B6240" stroke-width="2" fill="none"/><rect x="21" y="17" width="5" height="7" rx="1" stroke="#8B6240" stroke-width="2" fill="none"/></svg>
+        <span class="nav-label">Metrics</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="10" r="6" stroke="#8B6240" stroke-width="2" fill="none"/><path d="M4 30c0-6.6 5.4-12 12-12s12 5.4 12 12" stroke="#8B6240" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        <span class="nav-label">Profile</span>
+      </div>
+    </div>
+
+    <!-- Nav C: Two-tone -->
+    <p class="icon-context-note">Style C — Two-Tone</p>
+    <div class="demo-nav">
+      <div class="nav-item active">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M16 3L2 14h4v15h8v-9h4v9h8V14h4L16 3z" fill="#D4A017"/><rect x="13" y="19" width="6" height="10" rx="1" fill="#C4522A" opacity="0.9"/></svg>
+        <span class="nav-label" style="color:#D4A017;">Home</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M10 2v8c0 2.2 1.5 4 3.5 4.5V30h3V14.5c2-.5 3.5-2.3 3.5-4.5V2h-2.5v7h-1V2h-2.5v7h-1V2H10z" fill="#8B6240"/><path d="M22 2v28h3V18h2V2h-2v10h-1V2h-2z" fill="#8B6240"/></svg>
+        <span class="nav-label">Food</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect x="4" y="26" width="24" height="3" rx="1.5" fill="#8B6240"/><path d="M7 26l3-14h12l3 14H7z" fill="#8B6240" opacity="0.35"/><path d="M7 26l3-14h12l3 14H7z" stroke="#8B6240" stroke-width="1.5" fill="none"/><circle cx="16" cy="10" r="4" fill="#8B6240"/></svg>
+        <span class="nav-label">Weight</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><rect x="3" y="24" width="26" height="2.5" rx="1" fill="#8B6240"/><rect x="5" y="14" width="5" height="10" rx="1" fill="#8B6240" opacity="0.4"/><rect x="13" y="9" width="5" height="15" rx="1" fill="#8B6240"/><rect x="21" y="17" width="5" height="7" rx="1" fill="#8B6240" opacity="0.6"/></svg>
+        <span class="nav-label">Metrics</span>
+      </div>
+      <div class="nav-item">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="10" r="6" fill="#8B6240"/><path d="M4 30c0-6.6 5.4-12 12-12s12 5.4 12 12H4z" fill="#8B6240" opacity="0.35"/><path d="M4 30c0-6.6 5.4-12 12-12s12 5.4 12 12" stroke="#8B6240" stroke-width="1.5" fill="none"/></svg>
+        <span class="nav-label">Profile</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  .icon-style-block { background: var(--cream); border-radius: 4px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(44,26,14,0.10); border: 1px solid rgba(139,98,64,0.18); }
+  .icon-style-label { margin-bottom: 18px; }
+  .icon-style-name { font-family: 'Oswald', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brown-dark); display: block; margin-bottom: 3px; }
+  .icon-style-desc { font-family: 'Karla', sans-serif; font-size: 12px; color: var(--brown-light); }
+  .icon-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .icon-cell { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 56px; padding: 12px 10px; background: var(--parchment); border-radius: 4px; }
+  .icon-lbl { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brown-light); }
+  .icon-context-note { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--brown-light); margin-bottom: 8px; margin-top: 16px; }
+  .icon-context-note:first-of-type { margin-top: 0; }
+</style>
+
+<!-- ══ FOOTER ══ -->
+<div class="tile-footer">
+  Health Tracker · Design Direction · 70s Retro Earth Tone · May 2026
+</div>
+
+</body>
+</html>

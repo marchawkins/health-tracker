@@ -87,64 +87,103 @@ const FoodLogView = (() => {
             <div class="card">
                 <h2>Log Food</h2>
                 <form id="food-form" novalidate>
-                    <div class="form-row">
-                        <label for="ff-date">Date</label>
-                        <input type="date" id="ff-date" name="meal_date" value="${initDate}" required>
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-meal">Meal</label>
-                        <select id="ff-meal" name="meal_type">
-                            <option value="breakfast">Breakfast</option>
-                            <option value="lunch">Lunch</option>
-                            <option value="dinner">Dinner</option>
-                            <option value="snack">Snack</option>
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-name">Food Name *</label>
-                        <div class="input-with-scan">
-                            <input type="text" id="ff-name" name="food_name" placeholder="e.g. Chicken breast" required autocomplete="off">
-                            <button type="button" id="ff-scan" class="btn-icon" aria-label="Scan barcode">📷</button>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-serving">Serving Size</label>
-                        <input type="text" id="ff-serving" name="serving_size" placeholder="e.g. 4 oz, 1 cup">
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-servings">Number of Servings</label>
-                        <input type="number" id="ff-servings" name="servings" min="0.25" step="0.25" value="1" inputmode="decimal">
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-cal">Calories *</label>
-                        <input type="number" id="ff-cal" name="calories" min="0" step="1" placeholder="0" required inputmode="decimal">
-                    </div>
-                    <div class="macro-inputs">
-                        <div class="form-row">
-                            <label for="ff-protein">Protein (g)</label>
-                            <input type="number" id="ff-protein" name="protein_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+
+                    <div class="form-section">
+                        <div class="form-section-title">When &amp; What</div>
+                        <div class="form-row-inline">
+                            <div class="form-col">
+                                <div class="form-row">
+                                    <label for="ff-date">Date</label>
+                                    <input type="date" id="ff-date" name="meal_date" value="${initDate}" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-row">
+                                    <label for="ff-meal">Meal</label>
+                                    <select id="ff-meal" name="meal_type">
+                                        <option value="breakfast">Breakfast</option>
+                                        <option value="lunch">Lunch</option>
+                                        <option value="dinner">Dinner</option>
+                                        <option value="snack">Snack</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-row">
-                            <label for="ff-carbs">Carbs (g)</label>
-                            <input type="number" id="ff-carbs" name="carbs_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                            <label for="ff-name">Food Name *</label>
+                            <div class="input-with-scan">
+                                <input type="text" id="ff-name" name="food_name" placeholder="Search or type food name…" required autocomplete="off">
+                                <button type="button" id="ff-scan" class="btn-icon" aria-label="Scan barcode">
+                                    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
+                                        <rect x="21" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
+                                        <rect x="4" y="21" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
+                                        <path d="M21 21h2v2h-2zM25 21h2v2h-2zM21 25h2v2h-2zM25 25h2v2h-2z" fill="currentColor"/>
+                                        <rect x="6" y="6" width="3" height="3" fill="currentColor"/>
+                                        <rect x="23" y="6" width="3" height="3" fill="currentColor"/>
+                                        <rect x="6" y="23" width="3" height="3" fill="currentColor"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Amount</div>
+                        <div class="form-row-inline">
+                            <div class="form-col">
+                                <div class="form-row">
+                                    <label for="ff-serving">Serving Size</label>
+                                    <input type="text" id="ff-serving" name="serving_size" placeholder="e.g. 4 oz, 1 cup">
+                                </div>
+                            </div>
+                            <div class="form-col-small">
+                                <div class="form-row">
+                                    <label for="ff-servings">Servings</label>
+                                    <input type="number" id="ff-servings" name="servings" min="0.25" step="0.25" value="1" inputmode="decimal">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Calories &amp; Macros</div>
+                        <div class="form-row">
+                            <label for="ff-cal">Calories *</label>
+                            <input type="number" id="ff-cal" name="calories" min="0" step="1" placeholder="0" required inputmode="decimal">
+                        </div>
+                        <div class="macro-inputs">
+                            <div class="form-row">
+                                <label for="ff-protein">Protein (g)</label>
+                                <input type="number" id="ff-protein" name="protein_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                            </div>
+                            <div class="form-row">
+                                <label for="ff-carbs">Carbs (g)</label>
+                                <input type="number" id="ff-carbs" name="carbs_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                            </div>
+                            <div class="form-row">
+                                <label for="ff-fat">Fat (g)</label>
+                                <input type="number" id="ff-fat" name="fat_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                            </div>
+                            <div class="form-row">
+                                <label for="ff-fiber">Fiber (g)</label>
+                                <input type="number" id="ff-fiber" name="fiber_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Details</div>
+                        <div class="form-row">
+                            <label for="ff-sodium">Sodium (mg)</label>
+                            <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" placeholder="0" inputmode="decimal">
                         </div>
                         <div class="form-row">
-                            <label for="ff-fat">Fat (g)</label>
-                            <input type="number" id="ff-fat" name="fat_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
-                        </div>
-                        <div class="form-row">
-                            <label for="ff-fiber">Fiber (g)</label>
-                            <input type="number" id="ff-fiber" name="fiber_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                            <label for="ff-notes">Notes</label>
+                            <textarea id="ff-notes" name="notes" rows="2" placeholder="Optional"></textarea>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <label for="ff-sodium">Sodium (mg)</label>
-                        <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" placeholder="0" inputmode="decimal">
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-notes">Notes</label>
-                        <textarea id="ff-notes" name="notes" rows="2" placeholder="Optional"></textarea>
-                    </div>
+
                     <input type="hidden" name="source" value="manual">
                     <input type="hidden" name="off_barcode" value="">
                     <button type="submit" class="btn btn-primary btn-block">Add Food</button>
@@ -363,61 +402,90 @@ const FoodLogView = (() => {
             <div class="card">
                 <h2>Edit Food Entry</h2>
                 <form id="food-form" novalidate>
-                    <div class="form-row">
-                        <label for="ff-date">Date</label>
-                        <input type="date" id="ff-date" name="meal_date" value="${escHtml(entry.meal_date)}" required>
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-meal">Meal</label>
-                        <select id="ff-meal" name="meal_type">
-                            <option value="breakfast">Breakfast</option>
-                            <option value="lunch">Lunch</option>
-                            <option value="dinner">Dinner</option>
-                            <option value="snack">Snack</option>
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-name">Food Name *</label>
-                        <input type="text" id="ff-name" name="food_name" value="${escHtml(entry.food_name)}" required autocomplete="off">
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-serving">Serving Size</label>
-                        <input type="text" id="ff-serving" name="serving_size" value="${escHtml(entry.serving_size || '')}">
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-servings">Number of Servings</label>
-                        <input type="number" id="ff-servings" name="servings" min="0.25" step="0.25" value="1" inputmode="decimal">
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-cal">Calories *</label>
-                        <input type="number" id="ff-cal" name="calories" min="0" step="1" value="${entry.calories || ''}" required inputmode="decimal">
-                    </div>
-                    <div class="macro-inputs">
-                        <div class="form-row">
-                            <label for="ff-protein">Protein (g)</label>
-                            <input type="number" id="ff-protein" name="protein_g" min="0" step="0.1" value="${entry.protein_g || ''}" inputmode="decimal">
+
+                    <div class="form-section">
+                        <div class="form-section-title">When &amp; What</div>
+                        <div class="form-row-inline">
+                            <div class="form-col">
+                                <div class="form-row">
+                                    <label for="ff-date">Date</label>
+                                    <input type="date" id="ff-date" name="meal_date" value="${escHtml(entry.meal_date)}" required>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-row">
+                                    <label for="ff-meal">Meal</label>
+                                    <select id="ff-meal" name="meal_type">
+                                        <option value="breakfast">Breakfast</option>
+                                        <option value="lunch">Lunch</option>
+                                        <option value="dinner">Dinner</option>
+                                        <option value="snack">Snack</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-row">
-                            <label for="ff-carbs">Carbs (g)</label>
-                            <input type="number" id="ff-carbs" name="carbs_g" min="0" step="0.1" value="${entry.carbs_g || ''}" inputmode="decimal">
+                            <label for="ff-name">Food Name *</label>
+                            <input type="text" id="ff-name" name="food_name" value="${escHtml(entry.food_name)}" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Amount</div>
+                        <div class="form-row-inline">
+                            <div class="form-col">
+                                <div class="form-row">
+                                    <label for="ff-serving">Serving Size</label>
+                                    <input type="text" id="ff-serving" name="serving_size" value="${escHtml(entry.serving_size || '')}">
+                                </div>
+                            </div>
+                            <div class="form-col-small">
+                                <div class="form-row">
+                                    <label for="ff-servings">Servings</label>
+                                    <input type="number" id="ff-servings" name="servings" min="0.25" step="0.25" value="1" inputmode="decimal">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Calories &amp; Macros</div>
+                        <div class="form-row">
+                            <label for="ff-cal">Calories *</label>
+                            <input type="number" id="ff-cal" name="calories" min="0" step="1" value="${entry.calories || ''}" required inputmode="decimal">
+                        </div>
+                        <div class="macro-inputs">
+                            <div class="form-row">
+                                <label for="ff-protein">Protein (g)</label>
+                                <input type="number" id="ff-protein" name="protein_g" min="0" step="0.1" value="${entry.protein_g || ''}" inputmode="decimal">
+                            </div>
+                            <div class="form-row">
+                                <label for="ff-carbs">Carbs (g)</label>
+                                <input type="number" id="ff-carbs" name="carbs_g" min="0" step="0.1" value="${entry.carbs_g || ''}" inputmode="decimal">
+                            </div>
+                            <div class="form-row">
+                                <label for="ff-fat">Fat (g)</label>
+                                <input type="number" id="ff-fat" name="fat_g" min="0" step="0.1" value="${entry.fat_g || ''}" inputmode="decimal">
+                            </div>
+                            <div class="form-row">
+                                <label for="ff-fiber">Fiber (g)</label>
+                                <input type="number" id="ff-fiber" name="fiber_g" min="0" step="0.1" value="${entry.fiber_g || ''}" inputmode="decimal">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">Details</div>
+                        <div class="form-row">
+                            <label for="ff-sodium">Sodium (mg)</label>
+                            <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" value="${entry.sodium_mg || ''}" inputmode="decimal">
                         </div>
                         <div class="form-row">
-                            <label for="ff-fat">Fat (g)</label>
-                            <input type="number" id="ff-fat" name="fat_g" min="0" step="0.1" value="${entry.fat_g || ''}" inputmode="decimal">
-                        </div>
-                        <div class="form-row">
-                            <label for="ff-fiber">Fiber (g)</label>
-                            <input type="number" id="ff-fiber" name="fiber_g" min="0" step="0.1" value="${entry.fiber_g || ''}" inputmode="decimal">
+                            <label for="ff-notes">Notes</label>
+                            <textarea id="ff-notes" name="notes" rows="2">${escHtml(entry.notes || '')}</textarea>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <label for="ff-sodium">Sodium (mg)</label>
-                        <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" value="${entry.sodium_mg || ''}" inputmode="decimal">
-                    </div>
-                    <div class="form-row">
-                        <label for="ff-notes">Notes</label>
-                        <textarea id="ff-notes" name="notes" rows="2">${escHtml(entry.notes || '')}</textarea>
-                    </div>
+
                     <input type="hidden" name="source" value="${escHtml(entry.source || 'manual')}">
                     <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
                     <button type="button" id="btn-delete-entry" class="btn btn-danger btn-block" style="margin-top:8px;">Delete Entry</button>

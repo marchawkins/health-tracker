@@ -142,6 +142,7 @@ const ProfileView = (() => {
                     </div>
 
                     <div id="tdee-result"></div>
+                    <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">Save Profile</button>
                 </div>
 
                 <div class="card">
@@ -184,6 +185,7 @@ const ProfileView = (() => {
                             <input type="number" id="pf-gsleep" name="goal_sleep_hours" min="0" max="24" step="0.5" placeholder="8" inputmode="decimal">
                         </div>
                     </div>
+                    <button type="submit" class="btn btn-primary btn-block" style="margin-top:8px;">Save Profile</button>
                 </div>
 
                 <div class="card">
@@ -220,7 +222,6 @@ const ProfileView = (() => {
                     <button type="submit" class="btn btn-primary btn-block">Save Profile</button>
                 </div>
             </form>
-            <button id="profile-logout" class="btn btn-secondary btn-block" style="margin-top:8px;">Sign Out</button>
 
             <div class="card acct-card">
                 <h2>Change Email</h2>
@@ -266,6 +267,8 @@ const ProfileView = (() => {
                     <button type="submit" class="btn btn-primary btn-block">Save Password</button>
                 </form>
             </div>
+
+            <button id="profile-logout" class="btn btn-secondary btn-block" style="margin-top:4px;margin-bottom:8px;">Sign Out</button>
         `;
 
         const form = document.getElementById('profile-form');

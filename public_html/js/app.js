@@ -48,7 +48,7 @@ const App = (() => {
 
         setNavVisible(!!currentUser);
 
-        document.querySelectorAll('.nav-item').forEach(el => {
+        document.querySelectorAll('.nav-item, .header-icon-btn').forEach(el => {
             el.classList.toggle('active', el.dataset.view === name);
         });
 

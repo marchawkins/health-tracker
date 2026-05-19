@@ -35,7 +35,20 @@ const DashboardView = (() => {
         container.innerHTML = `
             <div class="date-nav">
                 <button id="dash-prev" class="btn-icon">&larr;</button>
-                <input type="date" id="dash-date" value="${currentDate}">
+                <div class="date-display">
+                    <span id="dash-date-label" class="date-display-label">${fmtDateLabel(currentDate)}</span>
+                    <button type="button" class="btn-cal" aria-label="Pick date" title="Pick date">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+                            <path d="M3 9h18" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M8 2v4M16 2v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            <circle cx="8" cy="14" r="1.2" fill="currentColor"/>
+                            <circle cx="12" cy="14" r="1.2" fill="currentColor"/>
+                            <circle cx="16" cy="14" r="1.2" fill="currentColor"/>
+                        </svg>
+                        <input type="date" id="dash-date" value="${currentDate}" aria-label="Select date">
+                    </button>
+                </div>
                 <button id="dash-today" class="btn-icon">Today</button>
                 <button id="dash-next" class="btn-icon">&rarr;</button>
             </div>
@@ -48,26 +61,35 @@ const DashboardView = (() => {
             document.getElementById('dash-today').style.display = isToday ? 'none' : '';
         }
 
+        function updateDateLabel() {
+            const el = document.getElementById('dash-date-label');
+            if (el) el.textContent = fmtDateLabel(currentDate);
+        }
+
         document.getElementById('dash-date').addEventListener('change', e => {
             currentDate = e.target.value;
+            updateDateLabel();
             updateNav();
             loadData();
         });
         document.getElementById('dash-prev').addEventListener('click', () => {
             currentDate = offsetDate(currentDate, -1);
             document.getElementById('dash-date').value = currentDate;
+            updateDateLabel();
             updateNav();
             loadData();
         });
         document.getElementById('dash-next').addEventListener('click', () => {
             currentDate = offsetDate(currentDate, 1);
             document.getElementById('dash-date').value = currentDate;
+            updateDateLabel();
             updateNav();
             loadData();
         });
         document.getElementById('dash-today').addEventListener('click', () => {
             currentDate = todayStr();
             document.getElementById('dash-date').value = currentDate;
+            updateDateLabel();
             updateNav();
             loadData();
         });
@@ -211,16 +233,16 @@ const DashboardView = (() => {
             </div>
 
             <div class="quick-log-row">
-                <button class="btn btn-secondary" id="ql-water">💧 Water</button>
-                <button class="btn btn-secondary" id="ql-custom">${customLabel}</button>
-                <button class="btn btn-secondary" id="ql-scan">📷 Scan</button>
+                <button class="btn-quick-text" id="ql-water">+ Water</button>
+                <button class="btn-quick-text" id="ql-custom">+ ${escHtml((ql && ql.name) || 'Coffee')}</button>
+                <a href="#food?date=${data.date}" class="btn-quick-text">+ Food</a>
+                <button class="btn-quick-text" id="ql-scan">Scan</button>
             </div>
             ${waterLine(water)}
 
             <div class="card">
                 <h2>${escHtml(dateLabel)}'s Food</h2>
                 ${renderFoodEntries(data.food_entries)}
-                <a href="#food?date=${data.date}" class="btn btn-secondary btn-block" style="margin-top:12px;">+ Add Food</a>
             </div>
         `;
 
