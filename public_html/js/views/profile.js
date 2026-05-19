@@ -1,5 +1,11 @@
 const ProfileView = (() => {
 
+    function escHtml(s) {
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
     // Mifflin-St Jeor. Takes metric inputs, returns kcal/day.
     function calcTdee(age, sex, heightCm, weightKg, activityLevel, goalType) {
         if (!age || !sex || !heightCm || weightKg == null) return null;

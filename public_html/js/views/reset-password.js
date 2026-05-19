@@ -1,5 +1,10 @@
 const ResetPasswordView = (() => {
 
+    function escHtml(s) {
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
 
     function getToken() {
         const qs = window.location.hash.split('?')[1] || '';

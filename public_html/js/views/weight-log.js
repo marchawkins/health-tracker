@@ -17,7 +17,13 @@ const WeightLogView = (() => {
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    async function render(container, navSignal) {
+    function escHtml(s) {
+        return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    async function render(container) {
         container.innerHTML = `
             <div class="card">
                 <h2>Log Weight</h2>
@@ -55,7 +61,7 @@ const WeightLogView = (() => {
         `;
 
         document.getElementById('weight-form').addEventListener('submit', handleSubmit);
-        loadList(navSignal);
+        loadList();
     }
 
     async function handleSubmit(e) {
@@ -94,16 +100,14 @@ const WeightLogView = (() => {
         }
     }
 
-    async function loadList(signal) {
+    async function loadList() {
         const list = document.getElementById('weight-list');
         if (!list) return;
         try {
-            const entries = await API.weight.list(30, signal);
-            if (signal && signal.aborted) return;
-            if (list.isConnected) renderList(list, entries);
+            const entries = await API.weight.list(30);
+            renderList(list, entries);
         } catch (err) {
-            if (err.name === 'AbortError') return;
-            if (list.isConnected) list.innerHTML = `<p class="error">${escHtml(err.message)}</p>`;
+            list.innerHTML = `<p class="error">${escHtml(err.message)}</p>`;
         }
     }
 
