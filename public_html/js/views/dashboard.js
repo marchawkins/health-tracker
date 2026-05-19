@@ -1,5 +1,6 @@
 const DashboardView = (() => {
-    let currentDate = todayStr();
+    let currentDate    = todayStr();
+    let currentLoadCtrl = null; // AbortController for the in-flight dashboard API call
 
     function todayStr() {
         const d = new Date();
@@ -23,14 +24,15 @@ const DashboardView = (() => {
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    function escHtml(s) {
-        return String(s)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    async function render(container) {
+    async function render(container, navSignal) {
         currentDate = todayStr();
+
+        // When app.js navigates away, abort any in-flight load.
+        if (navSignal) {
+            navSignal.addEventListener('abort', () => {
+                if (currentLoadCtrl) currentLoadCtrl.abort();
+            });
+        }
 
         container.innerHTML = `
             <div class="date-nav">
@@ -99,14 +101,23 @@ const DashboardView = (() => {
     }
 
     async function loadData() {
+        // Abort any previous in-flight load (rapid date changes).
+        if (currentLoadCtrl) currentLoadCtrl.abort();
+        currentLoadCtrl = new AbortController();
+        const signal = currentLoadCtrl.signal;
+
         const content = document.getElementById('dash-content');
         if (!content) return;
         content.innerHTML = '<div class="loading">Loading&hellip;</div>';
         try {
-            const data = await API.dashboard.get(currentDate);
+            const data = await API.dashboard.get(currentDate, signal);
+            if (signal.aborted) return;
             renderContent(content, data);
         } catch (e) {
-            content.innerHTML = `<p class="error">Failed to load: ${escHtml(e.message)}</p>`;
+            if (e.name === 'AbortError') return;
+            if (content.isConnected) {
+                content.innerHTML = `<p class="error">Failed to load: ${escHtml(e.message)}</p>`;
+            }
         }
     }
 

@@ -9,6 +9,7 @@ const FoodLogView = (() => {
             ready()   { return Date.now() > backoffUntil; },
             success() { backoffUntil = 0; },
             failure() { backoffUntil = Date.now() + cooldownMs; },
+            reset()   { backoffUntil = 0; },
         };
     }
     const usdaBreaker = makeCircuitBreaker(30000);
@@ -67,16 +68,15 @@ const FoodLogView = (() => {
         return p.join(' &middot; ');
     }
 
-    function escHtml(s) {
-        return String(s)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
+    async function render(container, navSignal) {
+        // Reset circuit breakers each time the view mounts so transient
+        // API failures from a previous session don't block a new visit.
+        usdaBreaker.reset();
+        offBreaker.reset();
 
-    async function render(container) {
         const editId = editIdFromHash();
         if (editId) {
-            await renderEditMode(container, editId);
+            await renderEditMode(container, editId, navSignal);
             return;
         }
 
@@ -212,6 +212,10 @@ const FoodLogView = (() => {
         const ac = setupAutocomplete(document.getElementById('ff-name'));
         document.getElementById('ff-name').focus();
 
+        // Tear down autocomplete (timers, abort controllers, document listener)
+        // when app.js navigates away from this view.
+        if (navSignal) navSignal.addEventListener('abort', () => ac.cleanup());
+
         document.getElementById('ff-scan').addEventListener('click', () => {
             BarcodeScanner.open(async (barcode) => {
                 if (!barcode) return;
@@ -326,6 +330,10 @@ const FoodLogView = (() => {
             document.getElementById('fl-date').value = listDate;
             updateListLabel();
             loadList();
+
+            // Return focus to food name so the user can keep logging quickly.
+            const nameInput = document.getElementById('ff-name');
+            if (nameInput) nameInput.focus();
         } catch (err) {
             Toast.error('Failed to add: ' + err.message);
         } finally {
@@ -387,13 +395,15 @@ const FoodLogView = (() => {
         }
     }
 
-    async function renderEditMode(container, editId) {
+    async function renderEditMode(container, editId, navSignal) {
         container.innerHTML = '<div class="card"><div class="loading">Loading&hellip;</div></div>';
 
         let entry;
         try {
-            entry = await API.foods.get(editId);
+            entry = await API.foods.get(editId, navSignal);
+            if (navSignal && navSignal.aborted) return;
         } catch (err) {
+            if (err.name === 'AbortError') return;
             container.innerHTML = `<div class="card"><p class="error">Failed to load entry: ${escHtml(err.message)}</p></div>`;
             return;
         }
@@ -559,6 +569,7 @@ const FoodLogView = (() => {
         let baseNutrition  = null;
 
         const OFF_PAGE_SIZE = 20;
+        const MAX_OFF_PAGES = 5; // cap at 100 results to bound DOM growth
         const wrapper = inputEl.closest('.form-row');
         wrapper.style.position = 'relative';
 
@@ -644,6 +655,11 @@ const FoodLogView = (() => {
 
         async function fetchNextOffPage() {
             if (offFetching || offDone || !offBreaker.ready()) return;
+            if (offPage >= MAX_OFF_PAGES) { offDone = true; refreshFooter(); return; }
+
+            // Abort any previous scroll-triggered OFF fetch before starting a new one.
+            if (offAbortCtrl) { offAbortCtrl.abort(); offAbortCtrl = null; }
+
             offFetching  = true;
             offAbortCtrl = new AbortController();
             const myGen    = gen;
@@ -662,14 +678,14 @@ const FoodLogView = (() => {
                 const products = (data.products || []).filter(p => p.product_name);
                 offPage     = nextPage;
                 offFetching = false;
-                if (products.length < OFF_PAGE_SIZE) offDone = true;
+                if (products.length < OFF_PAGE_SIZE || offPage >= MAX_OFF_PAGES) offDone = true;
 
                 const newItems = products.map(mapOffProduct);
                 offResults = offResults.concat(newItems);
                 appendItems(newItems);
             } catch (err) {
-                if (err.name === 'AbortError') return;
                 offAbortCtrl = null;
+                if (err.name === 'AbortError') { offFetching = false; return; }
                 offBreaker.failure();
                 if (gen !== myGen) return;
                 offFetching = false;
@@ -865,7 +881,19 @@ const FoodLogView = (() => {
         }
         document.addEventListener('click', outsideClickHandler);
 
-        return { fill: fillFromSuggestion };
+        // Called by the view when navigating away — cancels all pending work
+        // and removes the document-level listener so nothing leaks.
+        function cleanup() {
+            clearTimeout(localTimer);
+            clearTimeout(usdaTimer);
+            clearTimeout(offTimer);
+            if (usdaAbortCtrl) { usdaAbortCtrl.abort(); usdaAbortCtrl = null; }
+            if (offAbortCtrl)  { offAbortCtrl.abort();  offAbortCtrl  = null; }
+            document.removeEventListener('click', outsideClickHandler);
+            removeDropdown();
+        }
+
+        return { fill: fillFromSuggestion, cleanup };
     }
 
     return { render };

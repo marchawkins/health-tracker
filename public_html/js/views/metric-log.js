@@ -19,12 +19,6 @@ function makeMetricLogView(cfg) {
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    function escHtml(s) {
-        return String(s)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
     function fmtValue(v) {
         const n = parseFloat(v);
         if (isNaN(n)) return String(v);
@@ -33,17 +27,18 @@ function makeMetricLogView(cfg) {
             : Math.round(n).toLocaleString('en-US');
     }
 
-    async function loadDefinition() {
+    async function loadDefinition(signal) {
         if (defId !== null) return;
         try {
-            const defs = await API.metrics.definitions();
+            const defs = await API.metrics.definitions(signal);
             const def  = defs.find(d => d.slug === cfg.slug);
             if (def) defId = def.id;
         } catch (_) {}
     }
 
-    async function render(container) {
-        await loadDefinition();
+    async function render(container, navSignal) {
+        await loadDefinition(navSignal);
+        if (navSignal && navSignal.aborted) return;
 
         if (!defId) {
             container.innerHTML = '<div class="card"><p class="error">Metric definition not found for "' + escHtml(cfg.slug) + '".</p></div>';
@@ -84,7 +79,7 @@ function makeMetricLogView(cfg) {
         `;
 
         document.getElementById('ml-form').addEventListener('submit', handleSubmit);
-        loadList();
+        loadList(navSignal);
     }
 
     async function handleSubmit(e) {
@@ -121,14 +116,16 @@ function makeMetricLogView(cfg) {
         }
     }
 
-    async function loadList() {
+    async function loadList(signal) {
         const list = document.getElementById('ml-list');
         if (!list) return;
         try {
-            const entries = await API.metrics.list(defId);
-            renderList(list, entries);
+            const entries = await API.metrics.list(defId, signal);
+            if (signal && signal.aborted) return;
+            if (list.isConnected) renderList(list, entries);
         } catch (err) {
-            list.innerHTML = `<p class="error">${escHtml(err.message)}</p>`;
+            if (err.name === 'AbortError') return;
+            if (list.isConnected) list.innerHTML = `<p class="error">${escHtml(err.message)}</p>`;
         }
     }
 
