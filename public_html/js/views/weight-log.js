@@ -49,6 +49,11 @@ const WeightLogView = (() => {
             </div>
 
             <div class="card">
+                <h2>Trend</h2>
+                <div id="weight-chart"></div>
+            </div>
+
+            <div class="card">
                 <h2>Recent Entries</h2>
                 <div id="weight-list"><div class="loading">Loading&hellip;</div></div>
             </div>
@@ -98,20 +103,36 @@ const WeightLogView = (() => {
         const list = document.getElementById('weight-list');
         if (!list) return;
         try {
-            const entries = await API.weight.list(30);
+            const entries = await API.weight.list(90);
             renderList(list, entries);
+            renderChart(entries);
         } catch (err) {
             list.innerHTML = `<p class="error">${escHtml(err.message)}</p>`;
         }
     }
 
+    function renderChart(entries) {
+        // Normalise all entries to lbs for a consistent axis
+        const chartData = entries.map(e => ({
+            date:  e.logged_at.slice(0, 10),
+            value: e.unit === 'kg' ? parseFloat(e.weight) * 2.20462 : parseFloat(e.weight),
+        }));
+        MiniChart.render('weight-chart', chartData, {
+            unit:      'lbs',
+            isDecimal: true,
+            minZero:   false,
+        });
+    }
+
     function renderList(container, entries) {
-        if (!entries.length) {
+        // Cap the list at 30; the full 90 are used by the chart
+        const show = entries.slice(0, 30);
+        if (!show.length) {
             container.innerHTML = '<p class="text-muted">No entries yet.</p>';
             return;
         }
 
-        container.innerHTML = entries.map(e => `
+        container.innerHTML = show.map(e => `
             <div class="weight-entry">
                 <div class="weight-entry-info">
                     <span class="weight-val">${e.weight} ${e.unit}</span>

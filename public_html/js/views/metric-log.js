@@ -72,6 +72,11 @@ function makeMetricLogView(cfg) {
             </div>
 
             <div class="card">
+                <h2>Trend</h2>
+                <div id="ml-chart"></div>
+            </div>
+
+            <div class="card">
                 <h2>Recent Entries</h2>
                 <div id="ml-list"><div class="loading">Loading&hellip;</div></div>
             </div>
@@ -121,9 +126,22 @@ function makeMetricLogView(cfg) {
         try {
             const entries = await API.metrics.list(defId);
             renderList(list, entries);
+            renderChart(entries);
         } catch (err) {
             list.innerHTML = `<p class="error">${escHtml(err.message)}</p>`;
         }
+    }
+
+    function renderChart(entries) {
+        const chartData = entries.map(e => ({
+            date:  e.logged_at.slice(0, 10),
+            value: parseFloat(e.value_numeric),
+        }));
+        MiniChart.render('ml-chart', chartData, {
+            unit:      cfg.unit,
+            isDecimal: cfg.isDecimal,
+            minZero:   true,
+        });
     }
 
     function renderList(container, entries) {

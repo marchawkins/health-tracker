@@ -997,6 +997,50 @@ a.food-entry:nth-child(even):active { background: rgba(44,26,14,0.08); }
 .input-with-scan { display: flex; gap: 8px; }
 .input-with-scan input { flex: 1; }
 
+/* ── MiniChart ───────────────────────────────────────────── */
+.chart-range-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.chart-range-btn {
+    padding: 4px 12px;
+    border: 1.5px solid var(--kraft);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--brown-light);
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.75rem; /* 12px */
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.chart-range-btn.active {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+    color: var(--cream);
+}
+@media (hover: hover) {
+    .chart-range-btn:not(.active):hover {
+        border-color: var(--terracotta);
+        color: var(--terracotta);
+    }
+}
+
+.chart-svg-wrap {
+    /* slight negative margin so chart bleeds to card edge on narrow screens */
+    margin: 0 -4px;
+}
+
+.chart-empty {
+    text-align: center;
+    color: var(--brown-light);
+    padding: 20px 0 8px;
+    font-size: 0.875rem; /* 14px */
+}
+
 /* ── Barcode scanner overlay ─────────────────────────────── */
 #scanner-overlay {
     position: fixed;
