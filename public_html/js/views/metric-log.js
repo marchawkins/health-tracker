@@ -19,12 +19,6 @@ function makeMetricLogView(cfg) {
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    function escHtml(s) {
-        return String(s)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
     function fmtValue(v) {
         const n = parseFloat(v);
         if (isNaN(n)) return String(v);

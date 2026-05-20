@@ -23,12 +23,6 @@ const DashboardView = (() => {
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    function escHtml(s) {
-        return String(s)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
     async function render(container) {
         currentDate = todayStr();
 
@@ -49,8 +43,10 @@ const DashboardView = (() => {
                         <input type="date" id="dash-date" value="${currentDate}" aria-label="Select date">
                     </button>
                 </div>
-                <button id="dash-today" class="btn-icon">Today</button>
-                <button id="dash-next" class="btn-icon">&rarr;</button>
+                <div class="date-nav-right">
+                    <button id="dash-today" class="btn-icon">Today</button>
+                    <button id="dash-next" class="btn-icon">&rarr;</button>
+                </div>
             </div>
             <div id="dash-content"><div class="loading">Loading&hellip;</div></div>
         `;
@@ -275,14 +271,32 @@ const DashboardView = (() => {
 
     function renderFoodEntries(entries) {
         if (!entries.length) return '<p class="text-muted">Nothing logged yet.</p>';
-        return entries.map(e => `
-            <a href="#food?edit=${e.id}" class="food-entry" aria-label="Edit ${escHtml(e.food_name)}">
-                <div class="food-entry-info">
-                    <span class="food-name">${escHtml(e.food_name)}</span>
-                    <span class="food-meta">${e.meal_type}${e.serving_size ? ' &middot; ' + escHtml(e.serving_size) : ''}</span>
-                </div>
-                <span class="food-cal">${Math.round(e.calories)}</span>
-            </a>
+
+        const mealOrder  = ['breakfast', 'lunch', 'dinner', 'snack'];
+        const mealLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' };
+        const groups     = {};
+        entries.forEach(e => {
+            const mt = e.meal_type || 'snack';
+            if (!groups[mt]) groups[mt] = [];
+            groups[mt].push(e);
+        });
+
+        // Collect any meal types not in the canonical order (shouldn't happen, but safe)
+        const order = [...mealOrder, ...Object.keys(groups).filter(mt => !mealOrder.includes(mt))];
+
+        return order.filter(mt => groups[mt]).map(mt => `
+            <div class="meal-group">
+                <div class="meal-group-header">${mealLabels[mt] || mt}</div>
+                ${groups[mt].map(e => `
+                    <a href="#food?edit=${e.id}" class="food-entry" aria-label="Edit ${escHtml(e.food_name)}">
+                        <div class="food-entry-info">
+                            <span class="food-name">${escHtml(e.food_name)}</span>
+                            <span class="food-meta">${e.serving_size ? escHtml(e.serving_size) : ''}</span>
+                        </div>
+                        <span class="food-cal">${Math.round(e.calories)}</span>
+                    </a>
+                `).join('')}
+            </div>
         `).join('');
     }
 

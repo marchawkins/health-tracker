@@ -1,6 +1,12 @@
 const Toast = (() => {
+    const MAX_TOASTS = 3;
+
     function show(message, type, duration) {
         const container = document.getElementById('toast-container');
+        // Evict oldest toasts to prevent pile-up during rapid operations.
+        while (container.children.length >= MAX_TOASTS) {
+            container.removeChild(container.firstChild);
+        }
         const el = document.createElement('div');
         el.className = 'toast toast-' + (type || 'info');
         el.textContent = message;

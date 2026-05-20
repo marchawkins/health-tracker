@@ -1,5 +1,6 @@
 const App = (() => {
     let currentUser = null;
+    let navController = null;
 
     const AUTH_VIEWS = new Set(['login', 'register', 'forgot-password', 'reset-password', 'verify-email']);
 
@@ -52,13 +53,19 @@ const App = (() => {
             el.classList.toggle('active', el.dataset.view === name);
         });
 
+        // Cancel any in-flight render from the previous route.
+        if (navController) navController.abort();
+        navController = new AbortController();
+        const signal = navController.signal;
+
         const main = document.getElementById('app-main');
         main.innerHTML = '';
         main.scrollTop = 0;
 
         try {
-            await view.render(main);
+            await view.render(main, signal);
         } catch (err) {
+            if (err.name === 'AbortError') return;
             main.innerHTML = `<div class="card"><p class="error">Failed to load: ${err.message}</p></div>`;
         }
     }

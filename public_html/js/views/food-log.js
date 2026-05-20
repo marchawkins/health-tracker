@@ -67,12 +67,6 @@ const FoodLogView = (() => {
         return p.join(' &middot; ');
     }
 
-    function escHtml(s) {
-        return String(s)
-            .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
     async function render(container) {
         const editId = editIdFromHash();
         if (editId) {
@@ -110,18 +104,16 @@ const FoodLogView = (() => {
                             </div>
                         </div>
                         <div class="form-row">
-                            <label for="ff-name">Food Name *</label>
+                            <div class="form-row-label">
+                                <label for="ff-name">Food Name *</label>
+                                <button type="button" id="ff-clear" class="btn-field-clear" aria-label="Clear form">✕ Clear</button>
+                            </div>
                             <div class="input-with-scan">
                                 <input type="text" id="ff-name" name="food_name" placeholder="Search or type food name…" required autocomplete="off">
                                 <button type="button" id="ff-scan" class="btn-icon" aria-label="Scan barcode">
-                                    <svg width="20" height="20" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
-                                        <rect x="21" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
-                                        <rect x="4" y="21" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" fill="none"/>
-                                        <path d="M21 21h2v2h-2zM25 21h2v2h-2zM21 25h2v2h-2zM25 25h2v2h-2z" fill="currentColor"/>
-                                        <rect x="6" y="6" width="3" height="3" fill="currentColor"/>
-                                        <rect x="23" y="6" width="3" height="3" fill="currentColor"/>
-                                        <rect x="6" y="23" width="3" height="3" fill="currentColor"/>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="1.8"/>
                                     </svg>
                                 </button>
                             </div>
@@ -210,6 +202,7 @@ const FoodLogView = (() => {
         document.getElementById('food-form').addEventListener('submit', handleSubmit);
         document.getElementById('btn-cancel').addEventListener('click', () => history.back());
         const ac = setupAutocomplete(document.getElementById('ff-name'));
+        document.getElementById('ff-clear').addEventListener('click', () => ac.clear());
         document.getElementById('ff-name').focus();
 
         document.getElementById('ff-scan').addEventListener('click', () => {
@@ -865,7 +858,41 @@ const FoodLogView = (() => {
         }
         document.addEventListener('click', outsideClickHandler);
 
-        return { fill: fillFromSuggestion };
+        // Resets all form fields so the user can start a fresh search.
+        function clear() {
+            const form = inputEl.closest('form');
+            inputEl.value = '';
+            if (form.serving_size) form.serving_size.value = '';
+            if (form.servings)     form.servings.value     = '1';
+            if (form.calories)     form.calories.value     = '';
+            if (form.protein_g)    form.protein_g.value    = '';
+            if (form.carbs_g)      form.carbs_g.value      = '';
+            if (form.fat_g)        form.fat_g.value        = '';
+            if (form.fiber_g)      form.fiber_g.value      = '';
+            if (form.sodium_mg)    form.sodium_mg.value    = '';
+            if (form.source)       form.source.value       = 'manual';
+            if (form.off_barcode)  form.off_barcode.value  = '';
+            baseNutrition = null;
+            gen++;  // invalidate any in-flight searches
+            localResults = []; usdaResults = []; offResults = [];
+            offPage = 0; offFetching = false; offDone = false;
+            removeDropdown();
+            inputEl.focus();
+        }
+
+        // Called via navSignal when navigating away — cancels all pending
+        // work and removes the document listener so nothing leaks.
+        function cleanup() {
+            clearTimeout(localTimer);
+            clearTimeout(usdaTimer);
+            clearTimeout(offTimer);
+            if (usdaAbortCtrl) { usdaAbortCtrl.abort(); usdaAbortCtrl = null; }
+            if (offAbortCtrl)  { offAbortCtrl.abort();  offAbortCtrl  = null; }
+            document.removeEventListener('click', outsideClickHandler);
+            removeDropdown();
+        }
+
+        return { fill: fillFromSuggestion, clear, cleanup };
     }
 
     return { render };
