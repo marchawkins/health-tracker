@@ -104,12 +104,10 @@ const FoodLogView = (() => {
                             </div>
                         </div>
                         <div class="form-row">
-                            <div class="form-row-label">
-                                <label for="ff-name">Food Name *</label>
-                                <button type="button" id="ff-clear" class="btn-field-clear" aria-label="Clear form">✕ Clear</button>
-                            </div>
+                            <label for="ff-name">Food Name *</label>
                             <div class="input-with-scan">
                                 <input type="text" id="ff-name" name="food_name" placeholder="Search or type food name…" required autocomplete="off">
+                                <button type="button" id="ff-clear" class="btn-field-clear" aria-label="Clear form">✕</button>
                                 <button type="button" id="ff-scan" class="btn-icon" aria-label="Scan barcode">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -160,6 +158,10 @@ const FoodLogView = (() => {
                             <div class="form-row">
                                 <label for="ff-fiber">Fiber (g)</label>
                                 <input type="number" id="ff-fiber" name="fiber_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
+                            </div>
+                            <div class="form-row">
+                                <label for="ff-sugar">Sugar (g)</label>
+                                <input type="number" id="ff-sugar" name="sugar_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
                             </div>
                         </div>
                     </div>
@@ -298,6 +300,7 @@ const FoodLogView = (() => {
             carbs_g:      form.carbs_g.value    ? parseFloat(form.carbs_g.value)    : null,
             fat_g:        form.fat_g.value      ? parseFloat(form.fat_g.value)      : null,
             fiber_g:      form.fiber_g.value    ? parseFloat(form.fiber_g.value)    : null,
+            sugar_g:      form.sugar_g.value    ? parseFloat(form.sugar_g.value)    : null,
             sodium_mg:    form.sodium_mg.value  ? parseFloat(form.sodium_mg.value)  : null,
             notes:        form.notes.value.trim() || null,
             source:       form.source ? form.source.value : 'manual',
@@ -464,6 +467,10 @@ const FoodLogView = (() => {
                                 <label for="ff-fiber">Fiber (g)</label>
                                 <input type="number" id="ff-fiber" name="fiber_g" min="0" step="0.1" value="${entry.fiber_g || ''}" inputmode="decimal">
                             </div>
+                            <div class="form-row">
+                                <label for="ff-sugar">Sugar (g)</label>
+                                <input type="number" id="ff-sugar" name="sugar_g" min="0" step="0.1" value="${entry.sugar_g || ''}" inputmode="decimal">
+                            </div>
                         </div>
                     </div>
 
@@ -508,6 +515,7 @@ const FoodLogView = (() => {
                 carbs_g:      form.carbs_g.value    ? parseFloat(form.carbs_g.value)    : null,
                 fat_g:        form.fat_g.value      ? parseFloat(form.fat_g.value)      : null,
                 fiber_g:      form.fiber_g.value    ? parseFloat(form.fiber_g.value)    : null,
+                sugar_g:      form.sugar_g.value    ? parseFloat(form.sugar_g.value)    : null,
                 sodium_mg:    form.sodium_mg.value  ? parseFloat(form.sodium_mg.value)  : null,
                 notes:        form.notes.value.trim() || null,
             };
@@ -681,6 +689,7 @@ const FoodLogView = (() => {
                 protein_g:    n['proteins_100g']      != null ? parseFloat(n['proteins_100g'])                 : null,
                 carbs_g:      n['carbohydrates_100g'] != null ? parseFloat(n['carbohydrates_100g'])            : null,
                 fat_g:        n['fat_100g']           != null ? parseFloat(n['fat_100g'])                      : null,
+                sugar_g:      n['sugars_100g']        != null ? parseFloat(n['sugars_100g'])                   : null,
                 source:       'openfoodfacts',
                 _icon:        '🔍',
             };
@@ -701,6 +710,7 @@ const FoodLogView = (() => {
                 carbs_g:      nutrients['205'] != null ? parseFloat(nutrients['205'])  : null,
                 fat_g:        nutrients['204'] != null ? parseFloat(nutrients['204'])  : null,
                 fiber_g:      nutrients['291'] != null ? parseFloat(nutrients['291'])  : null,
+                sugar_g:      nutrients['269'] != null ? parseFloat(nutrients['269'])  : null,
                 sodium_mg:    nutrients['307'] != null ? Math.round(nutrients['307'])  : null,
                 source:       'usda',
                 _icon:        '🌾',
@@ -719,6 +729,7 @@ const FoodLogView = (() => {
                 carbs_g:   item.carbs_g   != null ? item.carbs_g   : null,
                 fat_g:     item.fat_g     != null ? item.fat_g     : null,
                 fiber_g:   item.fiber_g   != null ? item.fiber_g   : null,
+                sugar_g:   item.sugar_g   != null ? item.sugar_g   : null,
                 sodium_mg: item.sodium_mg != null ? item.sodium_mg : null,
             };
             inputEl.value           = item.food_name;
@@ -730,6 +741,7 @@ const FoodLogView = (() => {
             form.carbs_g.value   = fmt(baseNutrition.carbs_g);
             form.fat_g.value     = fmt(baseNutrition.fat_g);
             if (form.fiber_g)    form.fiber_g.value    = fmt(baseNutrition.fiber_g);
+            if (form.sugar_g)    form.sugar_g.value    = fmt(baseNutrition.sugar_g);
             if (form.sodium_mg)  form.sodium_mg.value  = fmt(baseNutrition.sodium_mg);
             if (form.source)     form.source.value     = item.source || 'manual';
             if (form.off_barcode) form.off_barcode.value = item.off_barcode || '';
@@ -843,6 +855,7 @@ const FoodLogView = (() => {
                 form.carbs_g.value   = fmt(baseNutrition.carbs_g);
                 form.fat_g.value     = fmt(baseNutrition.fat_g);
                 if (form.fiber_g)   form.fiber_g.value   = fmt(baseNutrition.fiber_g);
+                if (form.sugar_g)   form.sugar_g.value   = fmt(baseNutrition.sugar_g);
                 if (form.sodium_mg) form.sodium_mg.value = fmt(baseNutrition.sodium_mg);
             });
         }
@@ -869,6 +882,7 @@ const FoodLogView = (() => {
             if (form.carbs_g)      form.carbs_g.value      = '';
             if (form.fat_g)        form.fat_g.value        = '';
             if (form.fiber_g)      form.fiber_g.value      = '';
+            if (form.sugar_g)      form.sugar_g.value      = '';
             if (form.sodium_mg)    form.sodium_mg.value    = '';
             if (form.source)       form.source.value       = 'manual';
             if (form.off_barcode)  form.off_barcode.value  = '';

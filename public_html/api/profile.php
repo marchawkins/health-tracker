@@ -54,11 +54,11 @@ if ($method === 'PUT') {
             (user_id, display_name, age, sex,
              units, height_ft, height_in, height_cm, goal_weight,
              activity_level, goal,
-             goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg,
+             goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg, goal_sugar_g,
              goal_steps, goal_sleep_hours,
              quick_log_name, quick_log_serving_size, quick_log_calories,
              quick_log_protein_g, quick_log_carbs_g, quick_log_fat_g)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON DUPLICATE KEY UPDATE
              display_name           = VALUES(display_name),
              age                    = VALUES(age),
@@ -76,6 +76,7 @@ if ($method === 'PUT') {
              goal_protein_g         = VALUES(goal_protein_g),
              goal_fiber_g           = VALUES(goal_fiber_g),
              goal_sodium_mg         = VALUES(goal_sodium_mg),
+             goal_sugar_g           = VALUES(goal_sugar_g),
              goal_steps             = VALUES(goal_steps),
              goal_sleep_hours       = VALUES(goal_sleep_hours),
              quick_log_name         = VALUES(quick_log_name),
@@ -105,6 +106,7 @@ if ($method === 'PUT') {
         isset($data['goal_protein_g']) ? (int)$data['goal_protein_g']   : null,
         isset($data['goal_fiber_g'])   ? (int)$data['goal_fiber_g']     : null,
         isset($data['goal_sodium_mg'])        ? (int)$data['goal_sodium_mg']            : null,
+        isset($data['goal_sugar_g'])          ? (int)$data['goal_sugar_g']              : null,
         isset($data['goal_steps'])            ? (int)$data['goal_steps']                : null,
         isset($data['goal_sleep_hours'])      ? (float)$data['goal_sleep_hours']        : null,
         isset($data['quick_log_name'])         ? trim($data['quick_log_name'])           : null,

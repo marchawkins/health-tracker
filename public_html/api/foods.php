@@ -15,6 +15,8 @@ if ($method === 'GET' && $sub === 'autocomplete') {
             ROUND(AVG(protein_g), 2)   AS protein_g,
             ROUND(AVG(carbs_g),   2)   AS carbs_g,
             ROUND(AVG(fat_g),     2)   AS fat_g,
+            ROUND(AVG(fiber_g),   2)   AS fiber_g,
+            ROUND(AVG(sugar_g),   2)   AS sugar_g,
             COUNT(*)                   AS log_count
          FROM food_logs
          WHERE user_id = ? AND food_name LIKE ?
@@ -73,6 +75,7 @@ switch ($method) {
                 carbs_g      = ?,
                 fat_g        = ?,
                 fiber_g      = ?,
+                sugar_g      = ?,
                 sodium_mg    = ?,
                 notes        = ?
              WHERE id = ? AND user_id = ?'
@@ -87,6 +90,7 @@ switch ($method) {
             isset($data['carbs_g'])    ? (float)$data['carbs_g']    : null,
             isset($data['fat_g'])      ? (float)$data['fat_g']      : null,
             isset($data['fiber_g'])    ? (float)$data['fiber_g']    : null,
+            isset($data['sugar_g'])    ? (float)$data['sugar_g']    : null,
             isset($data['sodium_mg'])  ? (float)$data['sodium_mg']  : null,
             isset($data['notes'])      ? trim($data['notes'])        : null,
             $id,
@@ -122,8 +126,8 @@ switch ($method) {
         $stmt = $db->prepare(
             'INSERT INTO food_logs
              (user_id, meal_date, meal_type, food_name, serving_size,
-              calories, protein_g, carbs_g, fat_g, fiber_g, sodium_mg, notes, source, off_barcode, logged_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+              calories, protein_g, carbs_g, fat_g, fiber_g, sugar_g, sodium_mg, notes, source, off_barcode, logged_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             CURRENT_USER_ID,
@@ -136,6 +140,7 @@ switch ($method) {
             isset($data['carbs_g'])    ? (float)$data['carbs_g']    : null,
             isset($data['fat_g'])      ? (float)$data['fat_g']      : null,
             isset($data['fiber_g'])    ? (float)$data['fiber_g']    : null,
+            isset($data['sugar_g'])    ? (float)$data['sugar_g']    : null,
             isset($data['sodium_mg'])  ? (float)$data['sodium_mg']  : null,
             isset($data['notes'])      ? trim($data['notes'])        : null,
             ($data['source'] ?? '') === 'openfoodfacts' ? 'openfoodfacts' : 'manual',

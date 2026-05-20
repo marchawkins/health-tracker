@@ -17,6 +17,7 @@ $stmt = $db->prepare(
         COALESCE(SUM(carbs_g),    0)  AS total_carbs,
         COALESCE(SUM(fat_g),      0)  AS total_fat,
         COALESCE(SUM(fiber_g),    0)  AS total_fiber,
+        COALESCE(SUM(sugar_g),    0)  AS total_sugar,
         COALESCE(SUM(sodium_mg),  0)  AS total_sodium
      FROM food_logs WHERE user_id = ? AND meal_date = ?'
 );
@@ -24,7 +25,7 @@ $stmt->execute([CURRENT_USER_ID, $date]);
 $food_summary = $stmt->fetch();
 
 $pstmt = $db->prepare(
-    'SELECT goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg,
+    'SELECT goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg, goal_sugar_g,
             goal_steps, goal_sleep_hours,
             quick_log_name, quick_log_serving_size, quick_log_calories,
             quick_log_protein_g, quick_log_carbs_g, quick_log_fat_g
@@ -40,6 +41,7 @@ $goals = $prefs ? [
     'goal_protein_g'   => $prefs['goal_protein_g'],
     'goal_fiber_g'     => $prefs['goal_fiber_g'],
     'goal_sodium_mg'   => $prefs['goal_sodium_mg'],
+    'goal_sugar_g'     => $prefs['goal_sugar_g'],
     'goal_steps'       => $prefs['goal_steps'],
     'goal_sleep_hours' => $prefs['goal_sleep_hours'],
 ] : null;

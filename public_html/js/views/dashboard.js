@@ -106,6 +106,43 @@ const DashboardView = (() => {
         }
     }
 
+    // Returns a thin progress bar for goal tracking.
+    // dir '<' = stay-under goal; going over turns the bar rust-red.
+    // slim = true uses a 4px bar for the stats grid; false (default) = 8px hero bar.
+    function progressBar(val, goalVal, dir, slim) {
+        if (goalVal == null || parseFloat(goalVal) <= 0) return '';
+        const raw  = parseFloat(val) || 0;
+        const goal = parseFloat(goalVal);
+        const pct  = Math.min(100, (raw / goal) * 100);
+        const over = raw > goal && dir === '<';
+        const fillCls  = over ? ' over' : '';
+        const trackCls = slim ? ' stat-bar' : '';
+        return '<div class="progress-bar-track' + trackCls + '">' +
+               '<div class="progress-bar-fill' + fillCls + '" style="width:' + pct.toFixed(1) + '%"></div>' +
+               '</div>';
+    }
+
+    // Hero calorie display — large focal number replacing the plain date h2.
+    function heroStat(val, goalVal, dateLabel) {
+        const calFmt  = Math.round(parseFloat(val) || 0).toLocaleString('en-US');
+        const bar     = progressBar(val, goalVal, '<');
+        const goalHtml = goalVal != null
+            ? '<span class="hero-cal-goal">&lt;&nbsp;' +
+              Math.round(goalVal).toLocaleString('en-US') + ' cal goal</span>'
+            : '';
+        return '<div class="hero-stat">' +
+                   '<div class="hero-label">' + escHtml(dateLabel) + '</div>' +
+                   '<div class="hero-cal-row">' +
+                       '<span class="hero-cal-val">' + calFmt + '</span>' +
+                       '<div class="hero-cal-meta">' +
+                           '<span class="hero-cal-unit">cal</span>' +
+                           goalHtml +
+                       '</div>' +
+                   '</div>' +
+                   bar +
+               '</div>';
+    }
+
     // dir: '<' (stay-under) or '>' (hit-at-least), shown next to the goal value.
     // precision: decimal places for both the current value and goal (default 0).
     function goalStat(val, unit, label, goalVal, dir, precision) {
@@ -115,20 +152,21 @@ const DashboardView = (() => {
             maximumFractionDigits: precision,
         });
         const dirHtml = dir === '<' ? '&lt;&nbsp;' : dir === '>' ? '&gt;&nbsp;' : '';
-        const v = fmt(val);
-        const g = goalVal != null
+        const v   = fmt(val);
+        const g   = goalVal != null
             ? ' <span class="goal-target">(' + dirHtml + fmt(goalVal) + (label ? unit : '') + ')</span>'
             : '';
+        const bar = progressBar(val, goalVal, dir, true);
         if (label) {
             return '<div class="goal-stat">' +
                 '<span class="goal-val">' + v + '</span>' +
                 '<span class="goal-unit">' + unit + ' ' + label + '</span>' +
-                g + '</div>';
+                g + bar + '</div>';
         }
         return '<div class="goal-stat">' +
             '<span class="goal-val">' + v + '</span>' +
             '<span class="goal-unit"> ' + unit + '</span>' +
-            g + '</div>';
+            g + bar + '</div>';
     }
 
     function guessMealType() {
@@ -212,19 +250,20 @@ const DashboardView = (() => {
 
         container.innerHTML = `
             <div class="card">
-                <h2>${escHtml(dateLabel)}</h2>
+                ${heroStat(s.total_calories, goals && goals.goal_calories, dateLabel)}
+                <hr class="dash-divider">
                 <div class="dash-goals">
-                    ${goalStat(s.total_calories, 'cal',    null,      goals && goals.goal_calories,   '<')}
-                    ${goalStat(s.total_protein,  'g',      'protein', goals && goals.goal_protein_g,  '>')}
-                    ${goalStat(s.total_carbs,    'g',      'carbs',   goals && goals.goal_carbs_g,    '<')}
-                    ${goalStat(s.total_fat,      'g',      'fat',     goals && goals.goal_fat_g,      '<')}
-                    ${goalStat(s.total_fiber,    'g',      'fiber',   goals && goals.goal_fiber_g,    '>')}
-                    ${goalStat(s.total_sodium,   'mg',     'sodium',  goals && goals.goal_sodium_mg,  '<')}
+                    ${goalStat(s.total_protein,  'g',  'protein', goals && goals.goal_protein_g,  '>')}
+                    ${goalStat(s.total_carbs,    'g',  'carbs',   goals && goals.goal_carbs_g,    '<')}
+                    ${goalStat(s.total_fat,      'g',  'fat',     goals && goals.goal_fat_g,      '<')}
+                    ${goalStat(s.total_fiber,    'g',  'fiber',   goals && goals.goal_fiber_g,    '>')}
+                    ${goalStat(s.total_sugar,    'g',  'sugar',   goals && goals.goal_sugar_g,    '<')}
+                    ${goalStat(s.total_sodium,   'mg', 'sodium',  goals && goals.goal_sodium_mg,  '<')}
                 </div>
                 <hr class="dash-divider">
                 <div class="dash-goals">
-                    ${goalStat(data.steps,       'steps',  null,  stepsGoal, '>',   0)}
-                    ${goalStat(data.sleep_hours, 'h',      'sleep', sleepGoal, '>',  1)}
+                    ${goalStat(data.steps,       'steps', null,   stepsGoal, '>',  0)}
+                    ${goalStat(data.sleep_hours, 'h',    'sleep', sleepGoal, '>',  1)}
                 </div>
             </div>
 
