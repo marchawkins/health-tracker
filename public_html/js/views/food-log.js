@@ -163,20 +163,14 @@ const FoodLogView = (() => {
                                 <label for="ff-sugar">Sugar (g)</label>
                                 <input type="number" id="ff-sugar" name="sugar_g" min="0" step="0.1" placeholder="0" inputmode="decimal">
                             </div>
+                            <div class="form-row">
+                                <label for="ff-sodium">Sodium (mg)</label>
+                                <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" placeholder="0" inputmode="decimal">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-section">
-                        <div class="form-section-title">Details</div>
-                        <div class="form-row">
-                            <label for="ff-sodium">Sodium (mg)</label>
-                            <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" placeholder="0" inputmode="decimal">
-                        </div>
-                        <div class="form-row">
-                            <label for="ff-notes">Notes</label>
-                            <textarea id="ff-notes" name="notes" rows="2" placeholder="Optional"></textarea>
-                        </div>
-                    </div>
+                    <textarea id="ff-notes" name="notes" style="display:none"></textarea>
 
                     <input type="hidden" name="source" value="manual">
                     <input type="hidden" name="off_barcode" value="">
@@ -471,20 +465,14 @@ const FoodLogView = (() => {
                                 <label for="ff-sugar">Sugar (g)</label>
                                 <input type="number" id="ff-sugar" name="sugar_g" min="0" step="0.1" value="${entry.sugar_g || ''}" inputmode="decimal">
                             </div>
+                            <div class="form-row">
+                                <label for="ff-sodium">Sodium (mg)</label>
+                                <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" value="${entry.sodium_mg || ''}" inputmode="decimal">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-section">
-                        <div class="form-section-title">Details</div>
-                        <div class="form-row">
-                            <label for="ff-sodium">Sodium (mg)</label>
-                            <input type="number" id="ff-sodium" name="sodium_mg" min="0" step="1" value="${entry.sodium_mg || ''}" inputmode="decimal">
-                        </div>
-                        <div class="form-row">
-                            <label for="ff-notes">Notes</label>
-                            <textarea id="ff-notes" name="notes" rows="2">${escHtml(entry.notes || '')}</textarea>
-                        </div>
-                    </div>
+                    <textarea id="ff-notes" name="notes" style="display:none">${escHtml(entry.notes || '')}</textarea>
 
                     <input type="hidden" name="source" value="${escHtml(entry.source || 'manual')}">
                     <button type="submit" class="btn btn-primary btn-block">Save Changes</button>

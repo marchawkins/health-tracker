@@ -46,6 +46,11 @@ function makeMetricLogView(cfg) {
 
         container.innerHTML = `
             <div class="card">
+                <h2>${escHtml(cfg.label)} Trends</h2>
+                <div id="ml-chart"></div>
+            </div>
+
+            <div class="card">
                 <h2>Log ${escHtml(cfg.label)}</h2>
                 <form id="ml-form" novalidate>
                     <div class="form-row">
@@ -69,11 +74,6 @@ function makeMetricLogView(cfg) {
                         Log ${escHtml(cfg.label)}
                     </button>
                 </form>
-            </div>
-
-            <div class="card">
-                <h2>Trend</h2>
-                <div id="ml-chart"></div>
             </div>
 
             <div class="card">

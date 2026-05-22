@@ -20,6 +20,11 @@ const WeightLogView = (() => {
     async function render(container) {
         container.innerHTML = `
             <div class="card">
+                <h2>Weight Trends</h2>
+                <div id="weight-chart"></div>
+            </div>
+
+            <div class="card">
                 <h2>Log Weight</h2>
                 <form id="weight-form" novalidate>
                     <div class="form-row">
@@ -46,11 +51,6 @@ const WeightLogView = (() => {
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">Log Weight</button>
                 </form>
-            </div>
-
-            <div class="card">
-                <h2>Trend</h2>
-                <div id="weight-chart"></div>
             </div>
 
             <div class="card">
