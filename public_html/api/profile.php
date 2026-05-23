@@ -41,6 +41,7 @@ if ($method === 'PUT') {
     $valid_activity = ['sedentary', 'lightly_active', 'moderately_active', 'very_active'];
     $valid_goal     = ['lose', 'maintain', 'gain'];
     $valid_units    = ['imperial', 'metric'];
+    $valid_sex      = ['male', 'female'];
 
     $activity = in_array($data['activity_level'] ?? '', $valid_activity)
         ? $data['activity_level'] : 'sedentary';
@@ -48,6 +49,8 @@ if ($method === 'PUT') {
         ? $data['goal'] : 'maintain';
     $units    = in_array($data['units'] ?? '', $valid_units)
         ? $data['units'] : 'imperial';
+    $sex      = in_array($data['sex'] ?? '', $valid_sex)
+        ? $data['sex'] : null;
 
     $stmt = $db->prepare(
         'INSERT INTO user_profiles
@@ -92,7 +95,7 @@ if ($method === 'PUT') {
         CURRENT_USER_ID,
         isset($data['display_name'])   ? trim($data['display_name'])    : null,
         isset($data['age'])            ? (int)$data['age']              : null,
-        !empty($data['sex'])           ? $data['sex']                   : null,
+        $sex,
         $units,
         isset($data['height_ft'])      ? (int)$data['height_ft']        : null,
         isset($data['height_in'])      ? (int)$data['height_in']        : null,

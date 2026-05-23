@@ -49,7 +49,14 @@ switch ($method) {
         $data = get_json_body();
         require_fields($data, ['metric_definition_id', 'value_numeric']);
 
-        $logged_at = !empty($data['logged_at']) ? $data['logged_at'] : date('Y-m-d H:i:s');
+        if (!empty($data['logged_at'])) {
+            if (!preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $data['logged_at'])) {
+                json_error('Invalid logged_at — expected YYYY-MM-DD HH:MM:SS');
+            }
+            $logged_at = $data['logged_at'];
+        } else {
+            $logged_at = date('Y-m-d H:i:s');
+        }
 
         $db   = get_db();
         $stmt = $db->prepare(
@@ -67,8 +74,8 @@ switch ($method) {
         ]);
 
         $insertId = (int)$db->lastInsertId();
-        $stmt2 = $db->prepare('SELECT * FROM metric_logs WHERE id = ?');
-        $stmt2->execute([$insertId]);
+        $stmt2 = $db->prepare('SELECT * FROM metric_logs WHERE id = ? AND user_id = ?');
+        $stmt2->execute([$insertId, CURRENT_USER_ID]);
         json_response($stmt2->fetch(), 201);
         break;
 

@@ -66,7 +66,7 @@ const App = (() => {
             await view.render(main, signal);
         } catch (err) {
             if (err.name === 'AbortError') return;
-            main.innerHTML = `<div class="card"><p class="error">Failed to load: ${err.message}</p></div>`;
+            main.innerHTML = `<div class="card"><p class="error">Failed to load: ${escHtml(err.message)}</p></div>`;
         }
     }
 

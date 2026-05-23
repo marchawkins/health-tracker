@@ -135,7 +135,7 @@ const WeightLogView = (() => {
         container.innerHTML = show.map(e => `
             <div class="weight-entry">
                 <div class="weight-entry-info">
-                    <span class="weight-val">${e.weight} ${e.unit}</span>
+                    <span class="weight-val">${escHtml(String(e.weight))} ${escHtml(e.unit)}</span>
                     <span class="weight-date">${fmtDate(e.logged_at)}</span>
                     ${e.notes ? `<span class="weight-notes">${escHtml(e.notes)}</span>` : ''}
                 </div>

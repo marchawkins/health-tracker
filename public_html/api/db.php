@@ -15,9 +15,7 @@ foreach ($candidates as $path) {
 }
 
 if ($config_path === null) {
-    throw new RuntimeException(
-        'config/db.php not found. Searched: ' . implode(', ', array_map('realpath', array_map('dirname', $candidates)))
-    );
+    throw new RuntimeException('Database configuration file not found.');
 }
 
 require_once $config_path;

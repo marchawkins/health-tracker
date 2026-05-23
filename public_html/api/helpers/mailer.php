@@ -1,6 +1,10 @@
 <?php
 class Mailer {
     public static function send(string $to, string $subject, string $body): bool {
+        // Strip CR/LF to prevent email header injection
+        $to      = str_replace(["\r", "\n"], '', $to);
+        $subject = str_replace(["\r", "\n"], '', $subject);
+
         $from    = 'Health Tracker <noreply@' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '>';
         $headers = implode("\r\n", [
             'From: ' . $from,

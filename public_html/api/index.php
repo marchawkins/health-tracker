@@ -14,13 +14,10 @@ set_error_handler(function(int $errno, string $errstr, string $errfile, int $err
 // Catch any uncaught exception (including the one above) and return JSON.
 set_exception_handler(function(Throwable $e): void {
     ob_clean();
+    error_log('Uncaught exception: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
     http_response_code(500);
     header('Content-Type: application/json; charset=utf-8');
-    echo json_encode([
-        'error' => $e->getMessage(),
-        'file'  => basename($e->getFile()),
-        'line'  => $e->getLine(),
-    ]);
+    echo json_encode(['error' => 'Internal server error']);
     exit;
 });
 
@@ -29,13 +26,10 @@ register_shutdown_function(function(): void {
     $err = error_get_last();
     if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
         ob_clean();
+        error_log('Fatal error: ' . $err['message'] . ' in ' . $err['file'] . ':' . $err['line']);
         http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            'error' => $err['message'],
-            'file'  => basename($err['file']),
-            'line'  => $err['line'],
-        ]);
+        echo json_encode(['error' => 'Internal server error']);
     }
 });
 
@@ -43,10 +37,13 @@ require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/db.php';
 
 // Session setup — must happen before any output.
+$isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+         || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
+
 session_set_cookie_params([
     'lifetime' => 0,
     'path'     => '/',
-    'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    'secure'   => $isSecure,
     'httponly' => true,
     'samesite' => 'Strict',
 ]);

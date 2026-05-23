@@ -335,7 +335,7 @@ const DashboardView = (() => {
 
         return order.filter(mt => groups[mt]).map(mt => `
             <div class="meal-group">
-                <div class="meal-group-header">${mealLabels[mt] || mt}</div>
+                <div class="meal-group-header">${mealLabels[mt] || escHtml(mt)}</div>
                 ${groups[mt].map(e => `
                     <a href="#food?edit=${e.id}" class="food-entry" aria-label="Edit ${escHtml(e.food_name)}">
                         <div class="food-entry-info">

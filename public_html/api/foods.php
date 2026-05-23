@@ -80,9 +80,12 @@ switch ($method) {
                 notes        = ?
              WHERE id = ? AND user_id = ?'
         );
+        $meal_type = in_array($data['meal_type'] ?? '', ['breakfast', 'lunch', 'dinner', 'snack'])
+            ? $data['meal_type'] : 'snack';
+
         $stmt->execute([
             $meal_date,
-            $data['meal_type']    ?? 'snack',
+            $meal_type,
             trim($data['food_name']),
             isset($data['serving_size']) ? trim($data['serving_size']) : null,
             (float)$data['calories'],
@@ -129,10 +132,13 @@ switch ($method) {
               calories, protein_g, carbs_g, fat_g, fiber_g, sugar_g, sodium_mg, notes, source, off_barcode, logged_at)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
+        $meal_type = in_array($data['meal_type'] ?? '', ['breakfast', 'lunch', 'dinner', 'snack'])
+            ? $data['meal_type'] : 'snack';
+
         $stmt->execute([
             CURRENT_USER_ID,
             $meal_date,
-            $data['meal_type']    ?? 'snack',
+            $meal_type,
             trim($data['food_name']),
             isset($data['serving_size']) ? trim($data['serving_size']) : null,
             (float)$data['calories'],
@@ -149,8 +155,8 @@ switch ($method) {
         ]);
 
         $insertId = (int)$db->lastInsertId();
-        $stmt2 = $db->prepare('SELECT * FROM food_logs WHERE id = ?');
-        $stmt2->execute([$insertId]);
+        $stmt2 = $db->prepare('SELECT * FROM food_logs WHERE id = ? AND user_id = ?');
+        $stmt2->execute([$insertId, CURRENT_USER_ID]);
         json_response($stmt2->fetch(), 201);
         break;
 

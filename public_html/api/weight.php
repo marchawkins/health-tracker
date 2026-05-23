@@ -40,17 +40,19 @@ switch ($method) {
             'INSERT INTO weight_logs (user_id, logged_at, weight, unit, notes)
              VALUES (?, ?, ?, ?, ?)'
         );
+        $unit = in_array($data['unit'] ?? '', ['lbs', 'kg']) ? $data['unit'] : 'lbs';
+
         $stmt->execute([
             CURRENT_USER_ID,
             $logged_at,
             (float)$data['weight'],
-            $data['unit']  ?? 'lbs',
+            $unit,
             isset($data['notes']) ? trim($data['notes']) : null,
         ]);
 
         $insertId = (int)$db->lastInsertId();
-        $stmt2 = $db->prepare('SELECT * FROM weight_logs WHERE id = ?');
-        $stmt2->execute([$insertId]);
+        $stmt2 = $db->prepare('SELECT * FROM weight_logs WHERE id = ? AND user_id = ?');
+        $stmt2->execute([$insertId, CURRENT_USER_ID]);
         json_response($stmt2->fetch(), 201);
         break;
 
