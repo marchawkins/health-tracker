@@ -1,11 +1,11 @@
 {
-  "name": "Health Tracker",
-  "short_name": "Health",
+  "name": "Vitale",
+  "short_name": "Vitale",
   "description": "Personal health and nutrition tracker",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f3f4f6",
-  "theme_color": "#2563eb",
+  "background_color": "#C4622D",
+  "theme_color": "#2C1A0E",
   "icons": [
     {
       "src": "/icons/icon-192.png",
