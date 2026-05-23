@@ -28,7 +28,8 @@ $pstmt = $db->prepare(
     'SELECT goal_calories, goal_carbs_g, goal_fat_g, goal_protein_g, goal_fiber_g, goal_sodium_mg, goal_sugar_g,
             goal_steps, goal_sleep_hours,
             quick_log_name, quick_log_serving_size, quick_log_calories,
-            quick_log_protein_g, quick_log_carbs_g, quick_log_fat_g
+            quick_log_protein_g, quick_log_carbs_g, quick_log_fat_g,
+            display_name
      FROM user_profiles WHERE user_id = ?'
 );
 $pstmt->execute([CURRENT_USER_ID]);
@@ -107,6 +108,7 @@ $food_entries = $stmt->fetchAll();
 
 json_response([
     'date'         => $date,
+    'display_name' => $prefs ? $prefs['display_name'] : null,
     'food_summary' => $food_summary,
     'food_entries' => $food_entries,
     'goals'        => $goals,

@@ -27,39 +27,33 @@ const DashboardView = (() => {
         currentDate = todayStr();
 
         container.innerHTML = `
+            <div id="dash-greeting"></div>
             <div class="date-nav">
                 <button id="dash-prev" class="btn-icon">&larr;</button>
                 <div class="date-display">
                     <span id="dash-date-label" class="date-display-label">${fmtDateLabel(currentDate)}</span>
-                    <button type="button" class="btn-cal" aria-label="Pick date" title="Pick date">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
-                            <path d="M3 9h18" stroke="currentColor" stroke-width="1.8"/>
-                            <path d="M8 2v4M16 2v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                            <circle cx="8" cy="14" r="1.2" fill="currentColor"/>
-                            <circle cx="12" cy="14" r="1.2" fill="currentColor"/>
-                            <circle cx="16" cy="14" r="1.2" fill="currentColor"/>
-                        </svg>
-                        <input type="date" id="dash-date" value="${currentDate}" aria-label="Select date">
-                    </button>
+                    <input type="date" id="dash-date" value="${currentDate}" aria-label="Select date">
                 </div>
-                <div class="date-nav-right">
-                    <button id="dash-today" class="btn-icon">Today</button>
-                    <button id="dash-next" class="btn-icon">&rarr;</button>
-                </div>
+                <button id="dash-next" class="btn-icon">&rarr;</button>
+            </div>
+            <div id="dash-today-row">
+                <button id="dash-today" class="btn-back-today">Back to Today</button>
             </div>
             <div id="dash-content"><div class="loading">Loading&hellip;</div></div>
         `;
 
         function updateNav() {
             const isToday = currentDate === todayStr();
-            document.getElementById('dash-next').style.display  = isToday ? 'none' : '';
-            document.getElementById('dash-today').style.display = isToday ? 'none' : '';
+            document.getElementById('dash-next').style.visibility = isToday ? 'hidden' : 'visible';
+            document.getElementById('dash-today-row').style.display = isToday ? 'none' : '';
         }
 
         function updateDateLabel() {
             const el = document.getElementById('dash-date-label');
             if (el) el.textContent = fmtDateLabel(currentDate);
+            // keep hidden input in sync so change event fires correctly
+            const picker = document.getElementById('dash-date');
+            if (picker) picker.value = currentDate;
         }
 
         document.getElementById('dash-date').addEventListener('change', e => {
@@ -122,6 +116,16 @@ const DashboardView = (() => {
                '</div>';
     }
 
+    function greeting(displayName) {
+        const h = new Date().getHours();
+        const salutation = h >= 5 && h < 12 ? 'Good morning'
+                         : h >= 12 && h < 17 ? 'Good afternoon'
+                         : h >= 17 && h < 21 ? 'Good evening'
+                         : 'Good night';
+        const name = displayName ? ', ' + escHtml(displayName) : '';
+        return '<div class="dash-greeting">' + salutation + name + '</div>';
+    }
+
     // Hero calorie display — large focal number replacing the plain date h2.
     function heroStat(val, goalVal, dateLabel) {
         const calFmt  = Math.round(parseFloat(val) || 0).toLocaleString('en-US');
@@ -131,7 +135,7 @@ const DashboardView = (() => {
               Math.round(goalVal).toLocaleString('en-US') + ' cal goal</span>'
             : '';
         return '<div class="hero-stat">' +
-                   '<div class="hero-label">' + escHtml(dateLabel) + '</div>' +
+                   '<div class="hero-label">Calories</div>' +
                    '<div class="hero-cal-row">' +
                        '<span class="hero-cal-val">' + calFmt + '</span>' +
                        '<div class="hero-cal-meta">' +
@@ -238,11 +242,17 @@ const DashboardView = (() => {
     }
 
     function renderContent(container, data) {
-        const s         = data.food_summary;
-        const goals     = data.goals     || null;
-        const ql        = data.quick_log || null;
-        const water     = data.water     || { consumed_oz: 0, goal_oz: 64 };
-        const dateLabel = fmtDateLabel(data.date);
+        const s           = data.food_summary;
+        const goals       = data.goals       || null;
+        const ql          = data.quick_log   || null;
+        const water       = data.water       || { consumed_oz: 0, goal_oz: 64 };
+        const dateLabel   = fmtDateLabel(data.date);
+        const displayName = data.display_name || null;
+
+        const greetingEl = document.getElementById('dash-greeting');
+        if (greetingEl && !greetingEl.innerHTML) {
+            greetingEl.innerHTML = greeting(displayName);
+        }
         const customLabel = escHtml((ql && ql.name) || '☕ Coffee');
 
         const stepsGoal = (goals && goals.goal_steps)       || 7500;
@@ -268,10 +278,10 @@ const DashboardView = (() => {
             </div>
 
             <div class="quick-log-row">
-                <button class="btn-quick-text" id="ql-water">+ Water</button>
-                <button class="btn-quick-text" id="ql-custom">+ ${escHtml((ql && ql.name) || 'Coffee')}</button>
-                <a href="#food?date=${data.date}" class="btn-quick-text">+ Food</a>
-                <button class="btn-quick-text" id="ql-scan">Scan</button>
+                <button class="btn-quick-text" id="ql-water"><span class="btn-plus">+</span><span class="btn-label">Water</span></button>
+                <button class="btn-quick-text" id="ql-custom"><span class="btn-plus">+</span><span class="btn-label">${escHtml((ql && ql.name) || 'Coffee')}</span></button>
+                <a href="#food?date=${data.date}" class="btn-quick-text"><span class="btn-plus">+</span><span class="btn-label">Food</span></a>
+                <button class="btn-quick-text" id="ql-scan"><span class="btn-label">Scan</span></button>
             </div>
             ${waterLine(water)}
 

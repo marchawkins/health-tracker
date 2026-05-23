@@ -1,5 +1,6 @@
 const FoodLogView = (() => {
     let listDate = todayStr();
+    let currentAc = null; // autocomplete handle, kept at module level so handleSubmit can reset it
 
     // After a failure, skip requests for cooldownMs to avoid console 502 spam.
     // Persists across form re-renders for the page session.
@@ -197,7 +198,8 @@ const FoodLogView = (() => {
 
         document.getElementById('food-form').addEventListener('submit', handleSubmit);
         document.getElementById('btn-cancel').addEventListener('click', () => history.back());
-        const ac = setupAutocomplete(document.getElementById('ff-name'));
+        currentAc = setupAutocomplete(document.getElementById('ff-name'));
+        const ac = currentAc;
         document.getElementById('ff-clear').addEventListener('click', () => ac.clear());
         document.getElementById('ff-name').focus();
 
@@ -307,8 +309,8 @@ const FoodLogView = (() => {
             Toast.success('Food logged!');
 
             const savedDate = data.meal_date;
-            form.reset();
-            form.meal_date.value = savedDate; // keep date after reset
+            if (currentAc) currentAc.clear(); // resets fields, increments gen, kills in-flight searches
+            form.meal_date.value = savedDate;
             form.meal_type.value = guessMealType();
 
             // Show the list for the date just logged
