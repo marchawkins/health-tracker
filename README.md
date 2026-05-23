@@ -6,6 +6,22 @@ A personal health tracking web app for logging food, weight, steps, and sleep. B
 
 Vitale lets you track daily nutrition against customizable macro and calorie goals, log body weight over time, and record activity metrics like steps and sleep. A barcode scanner lets you look up packaged foods via OpenFoodFacts. Food search pulls from both the USDA FoodData Central database and OpenFoodFacts, with results cached locally to reduce API calls.
 
+<p align="center">
+  <img src="./readme_assets/vitale-dashboard.png" width="900" alt="Vitale dashboard">
+</p>
+
+<p align="center">
+  <img src="./readme_assets/vitale-log-food.png" width="900" alt="Food logging screen">
+</p>
+
+<p align="center">
+  <img src="./readme_assets/vitale-log-steps.png" width="900" alt="Steps logging screen">
+</p>
+
+<p align="center">
+  <img src="./readme_assets/vitale-profile.png" width="900" alt="User profile screen">
+</p>
+
 The app is single-user by design but supports multiple accounts — each user has their own data and goals. Authentication uses bcrypt password hashing with email verification and password reset flows.
 
 ## Technical Notes
@@ -13,7 +29,7 @@ The app is single-user by design but supports multiple accounts — each user ha
 - **Frontend:** Vanilla JavaScript SPA with hash-based routing. No frameworks, no build step. All JS is organized into views, components, and a shared API client.
 - **Backend:** PHP 8+, structured as a lightweight JSON API. Each endpoint is a single PHP file routed through `api/index.php`.
 - **Database:** MySQL with a single schema file covering all tables.
-- **Food data:** Searches the [USDA FoodData Central API](https://fdc.nal.usda.gov/api-guide.html) and [OpenFoodFacts](https://world.openfoodfacts.org/) (no key required). USDA results are cached in a local `usda_cache` table.
+- **Food data:** Searches the USDA FoodData Central API and OpenFoodFacts (no key required). USDA results are cached in a local `usda_cache` table.
 - **Barcode scanning:** Uses the browser's native `BarcodeDetector` API where supported, with a fallback to a manual entry prompt.
 - **Email:** Password reset and email verification use PHP's `mail()`. On shared hosts, SMTP configuration may be required depending on the host.
 - **Hosting:** Tested on Hostinger shared hosting. Should work on any host running PHP 8+ and MySQL 5.7+.
@@ -24,7 +40,7 @@ The app is single-user by design but supports multiple accounts — each user ha
 
 - **Set up the database** — create a MySQL database, then import `db/schema.sql`. This creates all tables and loads a sample user (`sarah@example.com` / `Demo1234!`) with two weeks of data so you can see the app in action right away.
 
-- **Configure the database connection** — copy `config/db..sample.php` to `config/db.php` and fill in your database credentials. Also add your USDA API key (free at [fdc.nal.usda.gov](https://fdc.nal.usda.gov/api-guide.html)).
+- **Configure the database connection** — copy `config/db..sample.php` to `config/db.php` and fill in your database credentials. Also add your USDA API key (free at `fdc.nal.usda.gov`).
 
 - **Point your web root to `public_html/`** — the `config/` and `db/` directories sit outside the web root and are never served over HTTP.
 
