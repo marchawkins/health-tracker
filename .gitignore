@@ -3,5 +3,9 @@ public_html/.DS_Store
 
 # Database credentials — never commit
 config/db.php
+
+# Local editor/tool settings
+.claude/
+
 /design
 /db_backups

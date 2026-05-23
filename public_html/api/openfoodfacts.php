@@ -12,7 +12,7 @@ function off_curl(string $url): array {
         CURLOPT_CONNECTTIMEOUT => 2,
         CURLOPT_TIMEOUT        => 3,
         CURLOPT_FAILONERROR    => false,
-        CURLOPT_USERAGENT      => 'HealthTracker/1.0 (health.marchawkins.com)',
+        CURLOPT_USERAGENT      => 'VitaleHealthTracker/1.0',
     ]);
     $body   = curl_exec($ch);
     $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
