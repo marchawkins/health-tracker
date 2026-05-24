@@ -10,6 +10,11 @@ const BarcodeScanner = (() => {
         el.id = 'scanner-overlay';
         el.innerHTML =
             '<video id="scanner-video" autoplay muted playsinline></video>' +
+            '<button type="button" id="scanner-torch" hidden aria-label="Toggle flash">' +
+                '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<path d="M13 2L4.5 13.5H11L10 22L20.5 10H14L13 2Z" fill="currentColor"/>' +
+                '</svg>' +
+            '</button>' +
             '<div id="scanner-reticle"><div id="scanner-line"></div></div>' +
             '<p id="scanner-hint">Point camera at a barcode</p>' +
             '<button type="button" id="scanner-cancel" class="btn btn-secondary">Cancel</button>';
@@ -54,15 +59,66 @@ const BarcodeScanner = (() => {
         }, 30000);
 
         try {
-            const reader = new ZXing.BrowserMultiFormatReader();
+            // Limit to formats found on food packaging — skipping QR, DataMatrix,
+            // Aztec, PDF417 etc. makes every frame decode much faster and more reliable.
+            const hints = new Map();
+            hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+                ZXing.BarcodeFormat.EAN_13,
+                ZXing.BarcodeFormat.EAN_8,
+                ZXing.BarcodeFormat.UPC_A,
+                ZXing.BarcodeFormat.UPC_E,
+                ZXing.BarcodeFormat.CODE_128,
+                ZXing.BarcodeFormat.CODE_39,
+            ]);
+            // Try harder within each frame before giving up on it
+            hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+
+            const reader = new ZXing.BrowserMultiFormatReader(hints);
             activeReader   = reader;
             activeControls = await reader.decodeFromConstraints(
-                { video: { facingMode: { ideal: 'environment' } } },
+                {
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width:      { ideal: 1920, min: 640 },
+                        height:     { ideal: 1080, min: 480 },
+                    }
+                },
                 videoEl,
                 (result) => { if (result) finish(result.getText()); }
             );
             // Save stream reference now that the camera is live
-            if (videoEl.srcObject) activeStream = videoEl.srcObject;
+            if (videoEl.srcObject) {
+                activeStream = videoEl.srcObject;
+                const track = activeStream.getVideoTracks()[0];
+                if (track) {
+                    const caps = track.getCapabilities ? track.getCapabilities() : {};
+
+                    // Ask for continuous autofocus (helps on iOS PWA)
+                    try {
+                        if (caps.focusMode && caps.focusMode.includes('continuous')) {
+                            await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+                        }
+                    } catch (_) { /* not supported on all devices, safe to ignore */ }
+
+                    // Show torch button only when the device actually has a torch
+                    if (caps.torch) {
+                        const torchBtn = document.getElementById('scanner-torch');
+                        if (torchBtn) {
+                            torchBtn.hidden = false;
+                            let torchOn = false;
+                            torchBtn.addEventListener('click', async () => {
+                                torchOn = !torchOn;
+                                try {
+                                    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+                                    torchBtn.classList.toggle('torch-on', torchOn);
+                                } catch (_) {
+                                    torchOn = !torchOn; // revert on failure
+                                }
+                            });
+                        }
+                    }
+                }
+            }
             // Handle cancel/timeout that arrived while camera was initialising
             if (finished) {
                 if (activeControls) { try { activeControls.stop(); } catch (_) {} activeControls = null; }
