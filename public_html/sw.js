@@ -1,17 +1,26 @@
-const CACHE_NAME = 'health-tracker-v1';
+const CACHE_NAME = 'vitale-v2';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/offline.html',
+    '/manifest.json',
     '/css/app.css',
+    '/js/utils.js',
     '/js/api.js',
     '/js/app.js',
     '/js/components/toast.js',
     '/js/components/chart.js',
+    '/js/components/scanner.js',
+    '/js/views/login.js',
+    '/js/views/register.js',
+    '/js/views/forgot-password.js',
+    '/js/views/reset-password.js',
+    '/js/views/verify-email.js',
     '/js/views/dashboard.js',
     '/js/views/food-log.js',
     '/js/views/weight-log.js',
-    '/manifest.json',
+    '/js/views/metric-log.js',
+    '/js/views/profile.js',
 ];
 
 self.addEventListener('install', event => {
@@ -35,7 +44,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
 
-    // API: network-first, return JSON error when offline
+    // API: network-only, return JSON error when offline
     if (url.pathname.startsWith('/api/')) {
         event.respondWith(
             fetch(event.request).catch(() =>
@@ -48,17 +57,21 @@ self.addEventListener('fetch', event => {
         return;
     }
 
-    // Static assets: cache-first, fall back to offline page
+    // Static assets: network-first so deploys are picked up immediately.
+    // Falls back to cache when offline; falls back to offline.html as last resort.
     event.respondWith(
-        caches.match(event.request)
-            .then(cached => cached || fetch(event.request)
-                .then(res => {
-                    // Cache newly fetched static assets
+        fetch(event.request)
+            .then(res => {
+                // Only cache successful same-origin responses
+                if (res.ok && url.origin === self.location.origin) {
                     const clone = res.clone();
                     caches.open(CACHE_NAME).then(c => c.put(event.request, clone));
-                    return res;
-                })
-                .catch(() => caches.match('/offline.html'))
+                }
+                return res;
+            })
+            .catch(() =>
+                caches.match(event.request)
+                    .then(cached => cached || caches.match('/offline.html'))
             )
     );
 });
