@@ -4,8 +4,8 @@
   "description": "Personal health and nutrition tracker",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#C4622D",
-  "theme_color": "#2C1A0E",
+  "background_color": "#FAF8F3",
+  "theme_color": "#FAF8F3",
   "icons": [
     {
       "src": "/icons/icon-192.png",
