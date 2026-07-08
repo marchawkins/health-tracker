@@ -92,6 +92,6 @@ switch ($resource) {
     case 'profile':
         require __DIR__ . '/profile.php';
         break;
-    default:
+default:
         json_error('Not found', 404);
 }
