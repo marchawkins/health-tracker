@@ -1,6 +1,6 @@
 {
-  "name": "Vitale",
-  "short_name": "Vitale",
+  "name": "Health",
+  "short_name": "Health",
   "description": "Personal health and nutrition tracker",
   "start_url": "/",
   "display": "standalone",

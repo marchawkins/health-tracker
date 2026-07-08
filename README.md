@@ -1,13 +1,13 @@
-# Vitale Health Tracker
+# Health Health Tracker
 
 A personal health tracking web app for logging food, weight, steps, and sleep. Built to run on a standard shared PHP/MySQL host with no build tools or dependencies required.
 
 ## Overview
 
-Vitale lets you track daily nutrition against customizable macro and calorie goals, log body weight over time, and record activity metrics like steps and sleep. A barcode scanner lets you look up packaged foods via OpenFoodFacts. Food search pulls from both the USDA FoodData Central database and OpenFoodFacts, with results cached locally to reduce API calls.
+Health lets you track daily nutrition against customizable macro and calorie goals, log body weight over time, and record activity metrics like steps and sleep. A barcode scanner lets you look up packaged foods via OpenFoodFacts. Food search pulls from both the USDA FoodData Central database and OpenFoodFacts, with results cached locally to reduce API calls.
 
 <p align="center" valign="top">
-  <img src="./readme_assets/vitale-dashboard.png" width="20%" alt="Vitale dashboard">
+  <img src="./readme_assets/vitale-dashboard.png" width="20%" alt="Health dashboard">
   <img src="./readme_assets/vitale-log-food.png" width="20%" alt="Food logging screen">
   <img src="./readme_assets/vitale-log-steps.png" width="20%" alt="Steps logging screen">
   <img src="./readme_assets/vitale-profile.png" width="20%" alt="User profile screen">

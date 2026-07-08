@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vitale-v2';
+const CACHE_NAME = 'health-v2';
 const STATIC_ASSETS = [
     '/',
     '/index.html',

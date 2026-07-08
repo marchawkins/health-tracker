@@ -1,7 +1,7 @@
-# Handoff: Vitale — “Index” visual redesign
+# Handoff: Health — “Index” visual redesign
 
 ## Overview
-This package restyles the existing **Vitale** health-tracking PWA with a new look &
+This package restyles the existing **Health** health-tracking PWA with a new look &
 feel called **“Index”** — an editorial, monochrome aesthetic: paper-white surfaces,
 near-black ink, hairline rules, serif display numbers, and a single restrained amber
 accent. The app’s information architecture, screens, and logic are **unchanged** — this
@@ -15,12 +15,12 @@ is a **visual / styling** redesign of four existing screens:
 ## About the design files
 The files in `reference/` are a **design reference built in HTML/React + CSS** — a
 prototype that shows the intended look and behavior. They are **not** meant to be
-shipped as-is. Your job is to **recreate this look in the existing Vitale codebase**
+shipped as-is. Your job is to **recreate this look in the existing Health codebase**
 using its established framework, components, and state/logic. Reuse the app’s current
 data flow and handlers; only the presentation changes. Where the codebase already has a
 component (e.g. a number stepper, a select), restyle it to match — don’t rebuild logic.
 
-`reference/Vitale-Index-Reference.html` renders all four screens side-by-side. Open it
+`reference/Health-Index-Reference.html` renders all four screens side-by-side. Open it
 in a browser to inspect spacing, type, and color live (e.g. via DevTools). The CSS lives
 in `reference/styles.css` (the Index rules are all prefixed `.idx-…`; ignore the `.bl-…`
 rules — those belong to a second direction that was **not** chosen). Components are in
@@ -48,7 +48,7 @@ Work in this order, pausing for review after each step:
    JetBrains Mono) and add the color + type + spacing values from *Design tokens* below
    into the existing theming system — centralized tokens, not per-component hex.
    **Review the palette and type ramp before touching screens.**
-2. **Global chrome.** Restyle the App Header (home icon, serif `Vitale` wordmark with
+2. **Global chrome.** Restyle the App Header (home icon, serif `Health` wordmark with
    amber “e”, avatar) and the Tab Bar (mono uppercase labels, `ink` active state).
 3. **Screens, one at a time:** Dashboard → Log Food → Steps → Profile. Match each to its
    spec section and the matching PNG in `screenshots/`. **Reuse** existing inputs,
@@ -94,7 +94,7 @@ Three families (all Google Fonts):
 | Secondary hero number (weekly avg) | Newsreader | 64px / 400 | −2px | |
 | Screen title (`Log food`, `Profile`) | Newsreader | 34px / 500 | −0.5px | |
 | Day label (`Yesterday`) | Newsreader | 30px / 500 | — | suffix in *italic*, color `soft` |
-| Wordmark `Vitale` | Newsreader | 25px / 500 | 0.5px | final letter colored `accent` |
+| Wordmark `Health` | Newsreader | 25px / 500 | 0.5px | final letter colored `accent` |
 | Macro value | Newsreader | 21px / 500 | — | unit appended in 12px sans `faint` |
 | Text input value | Newsreader | 20px | — | |
 | Select value | Newsreader | 17px | — | |
@@ -125,7 +125,7 @@ Three families (all Google Fonts):
 
 ### Shared — App Header
 - Left: **home** icon, `accent` color, ~22px, 1.9 stroke.
-- Center: wordmark **Vitale** (Newsreader 25/500), final “e” in `accent`.
+- Center: wordmark **Health** (Newsreader 25/500), final “e” in `accent`.
 - Right: **user** avatar — 40px circle, `1px line` border, user glyph in `soft`.
 - Padding: `6px 26px 18px`.
 
@@ -219,7 +219,7 @@ Behavior is the app’s existing logic — preserve it. Styling-relevant states:
 design_handoff_vitale_index/
 ├─ README.md                         ← this spec
 ├─ reference/
-│  ├─ Vitale-Index-Reference.html    ← all 4 screens, open in a browser
+│  ├─ Health-Index-Reference.html    ← all 4 screens, open in a browser
 │  ├─ styles.css                     ← design CSS (use the .idx-* rules)
 │  ├─ frame.jsx                      ← phone shell, ICONS, Ring, LineChart
 │  └─ directionA.jsx                 ← the 4 Index screens
