@@ -1,5 +1,6 @@
 const DashboardView = (() => {
     let currentDate = todayStr();
+    let viewSignal  = null;
 
     function todayStr() {
         const d = new Date();
@@ -23,8 +24,9 @@ const DashboardView = (() => {
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    async function render(container) {
+    async function render(container, signal) {
         currentDate = todayStr();
+        viewSignal  = signal || null;
 
         container.innerHTML = `
             <div id="dash-greeting"></div>
@@ -93,9 +95,10 @@ const DashboardView = (() => {
         if (!content) return;
         content.innerHTML = '<div class="loading">Loading&hellip;</div>';
         try {
-            const data = await API.dashboard.get(currentDate);
+            const data = await API.dashboard.get(currentDate, viewSignal);
             renderContent(content, data);
         } catch (e) {
+            if (e.name === 'AbortError') return;
             content.innerHTML = `<p class="error">Failed to load: ${escHtml(e.message)}</p>`;
         }
     }
@@ -149,7 +152,9 @@ const DashboardView = (() => {
 
     // dir: '<' (stay-under) or '>' (hit-at-least), shown next to the goal value.
     // precision: decimal places for both the current value and goal (default 0).
-    function goalStat(val, unit, label, goalVal, dir, precision) {
+    // href: if set, renders as a clickable link (e.g. to the steps/sleep log pages)
+    // instead of a plain div.
+    function goalStat(val, unit, label, goalVal, dir, precision, href) {
         precision = precision || 0;
         const fmt = v => (parseFloat(v) || 0).toLocaleString('en-US', {
             minimumFractionDigits: precision,
@@ -160,17 +165,16 @@ const DashboardView = (() => {
         const g   = goalVal != null
             ? ' <span class="goal-target">(' + dirHtml + fmt(goalVal) + (label ? unit : '') + ')</span>'
             : '';
-        const bar = progressBar(val, goalVal, dir, true);
-        if (label) {
-            return '<div class="goal-stat">' +
-                '<span class="goal-val">' + v + '</span>' +
-                '<span class="goal-unit">' + unit + ' ' + label + '</span>' +
-                g + bar + '</div>';
-        }
-        return '<div class="goal-stat">' +
+        const bar     = progressBar(val, goalVal, dir, true);
+        const tag     = href ? 'a' : 'div';
+        const attrs   = href ? ' href="' + href + '"' : '';
+        const cls     = 'goal-stat' + (href ? ' goal-stat-link' : '');
+        const unitEl  = label
+            ? '<span class="goal-unit">' + unit + ' ' + label + '</span>'
+            : '<span class="goal-unit"> ' + unit + '</span>';
+        return '<' + tag + ' class="' + cls + '"' + attrs + '>' +
             '<span class="goal-val">' + v + '</span>' +
-            '<span class="goal-unit"> ' + unit + '</span>' +
-            g + bar + '</div>';
+            unitEl + g + bar + '</' + tag + '>';
     }
 
     function guessMealType() {
@@ -270,11 +274,6 @@ const DashboardView = (() => {
                     ${goalStat(s.total_sugar,    'g',  'sugar',   goals && goals.goal_sugar_g,    '<')}
                     ${goalStat(s.total_sodium,   'mg', 'sodium',  goals && goals.goal_sodium_mg,  '<')}
                 </div>
-                <hr class="dash-divider">
-                <div class="dash-goals">
-                    ${goalStat(data.steps,       'steps', null,   stepsGoal, '>',  0)}
-                    ${goalStat(data.sleep_hours, 'h',    'sleep', sleepGoal, '>',  1)}
-                </div>
             </div>
 
             <div class="quick-log-row">
@@ -286,6 +285,15 @@ const DashboardView = (() => {
             ${waterLine(water)}
 
             <div class="card">
+                <div class="dash-goals">
+                    ${goalStat(data.steps,       'steps', null,   stepsGoal, '>',  0, '#steps')}
+                    ${goalStat(data.sleep_hours, 'h',    'sleep', sleepGoal, '>',  1, '#sleep')}
+                </div>
+            </div>
+
+            <div id="dash-habits"></div>
+
+            <div class="card">
                 <h2>${escHtml(dateLabel)}'s Food</h2>
                 ${renderFoodEntries(data.food_entries)}
             </div>
@@ -294,6 +302,10 @@ const DashboardView = (() => {
         document.getElementById('ql-water').addEventListener('click',  () => quickLog('water',  ql));
         document.getElementById('ql-custom').addEventListener('click', () => quickLog('custom', ql));
         document.getElementById('ql-scan').addEventListener('click', handleScan);
+
+        if (data.date === todayStr()) {
+            HabitsWidget.mount(document.getElementById('dash-habits'), data.date, viewSignal);
+        }
     }
 
     function handleScan() {

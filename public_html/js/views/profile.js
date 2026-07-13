@@ -221,6 +221,18 @@ const ProfileView = (() => {
                 </div>
             </form>
 
+            <div class="card">
+                <h2>Habits</h2>
+                <p class="text-muted" style="font-size:13px;margin-bottom:14px;">Set goal minutes to 0 for a simple yes/no habit &mdash; no minutes tracked, just a checkbox.</p>
+                <div id="habits-config-list"><div class="loading">Loading&hellip;</div></div>
+                <div class="habit-add-row">
+                    <input type="text" id="habit-new-name" placeholder="New habit name" maxlength="100">
+                    <input type="number" id="habit-new-goal" placeholder="Goal min" min="0" step="1" inputmode="numeric">
+                    <button type="button" id="habit-add-btn" class="btn-icon">Add</button>
+                </div>
+                <button type="button" id="habits-save-btn" class="btn btn-primary btn-block" style="margin-top:14px;">Save Habits</button>
+            </div>
+
             <div class="card acct-card">
                 <h2>Change Email</h2>
                 <div class="form-row">
@@ -506,6 +518,118 @@ const ProfileView = (() => {
                 btn.disabled    = false;
                 btn.textContent = 'Save Password';
             }
+        });
+
+        initHabitsSection();
+    }
+
+    // ── Habits ────────────────────────────────────────────────────────────
+
+    async function initHabitsSection() {
+        const listEl = document.getElementById('habits-config-list');
+        if (!listEl) return;
+
+        let definitions = [];
+        let settings    = [];
+        try {
+            [definitions, settings] = await Promise.all([
+                API.habits.definitions(),
+                API.habits.settings(),
+            ]);
+        } catch (err) {
+            listEl.innerHTML = `<p class="error">Failed to load habits: ${escHtml(err.message)}</p>`;
+            return;
+        }
+
+        renderHabitsList(listEl, definitions, settings);
+
+        document.getElementById('habit-add-btn').addEventListener('click', async () => {
+            const nameInput = document.getElementById('habit-new-name');
+            const goalInput = document.getElementById('habit-new-goal');
+            const name      = nameInput.value.trim();
+            const goal      = goalInput.value === '' ? 20 : Math.max(0, parseInt(goalInput.value, 10) || 0);
+            if (!name) { Toast.error('Enter a habit name'); return; }
+
+            const btn = document.getElementById('habit-add-btn');
+            btn.disabled = true;
+            try {
+                await API.habits.createDefinition({ name, goal_minutes: goal });
+                nameInput.value = '';
+                goalInput.value = '';
+                [definitions, settings] = await Promise.all([
+                    API.habits.definitions(),
+                    API.habits.settings(),
+                ]);
+                renderHabitsList(listEl, definitions, settings);
+                Toast.success('Habit added');
+            } catch (err) {
+                Toast.error('Failed to add habit: ' + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('habits-save-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('habits-save-btn');
+            btn.disabled    = true;
+            btn.textContent = 'Saving…';
+
+            const updates = [];
+            listEl.querySelectorAll('.habit-config-item').forEach(li => {
+                updates.push({
+                    habit_id:     parseInt(li.dataset.habitId, 10),
+                    is_active:    li.querySelector('.habit-toggle').checked,
+                    goal_minutes: Math.max(0, parseInt(li.querySelector('.habit-config-goal').value, 10) || 0),
+                });
+            });
+
+            try {
+                await API.habits.saveSettings(updates);
+                Toast.success('Habits saved!');
+            } catch (err) {
+                Toast.error('Failed to save: ' + err.message);
+            } finally {
+                btn.disabled    = false;
+                btn.textContent = 'Save Habits';
+            }
+        });
+    }
+
+    function renderHabitsList(listEl, definitions, settings) {
+        const settingsById = {};
+        settings.forEach(s => { settingsById[s.habit_id] = s; });
+
+        listEl.innerHTML = definitions.map(def => {
+            const s        = settingsById[def.id] || { is_active: 1, goal_minutes: 20 };
+            const isSystem = Number(def.is_system) === 1;
+            return `
+                <div class="habit-config-item" data-habit-id="${def.id}">
+                    <input type="checkbox" class="habit-toggle" ${Number(s.is_active) ? 'checked' : ''}
+                           aria-label="Active: ${escHtml(def.name)}">
+                    <span class="habit-config-icon">${def.icon ? escHtml(def.icon) : ''}</span>
+                    <span class="habit-config-name">${escHtml(def.name)}</span>
+                    <input type="number" class="habit-config-goal" value="${s.goal_minutes}" min="0" step="1"
+                           inputmode="numeric" aria-label="Goal minutes: ${escHtml(def.name)}" title="0 = yes/no habit, no minutes tracked">
+                    ${isSystem ? '' : `<button type="button" class="btn-delete habit-delete-btn" aria-label="Delete ${escHtml(def.name)}">&times;</button>`}
+                </div>
+            `;
+        }).join('');
+
+        listEl.querySelectorAll('.habit-delete-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const item = btn.closest('.habit-config-item');
+                const id   = item.dataset.habitId;
+                if (!confirm('Delete this habit? This cannot be undone.')) return;
+                btn.disabled = true;
+                try {
+                    await API.habits.removeDefinition(id);
+                    item.remove();
+                    Toast.success('Habit deleted');
+                } catch (err) {
+                    Toast.error('Failed to delete: ' + err.message);
+                    btn.disabled = false;
+                }
+            });
         });
     }
 

@@ -82,6 +82,15 @@ const API = (() => {
             changeEmail:    (data) => request('PUT', '/profile/email', data),
             changePassword: (data) => request('PUT', '/profile/password', data),
         },
+        habits: {
+            list:             (date, signal) => request('GET',    '/habits' + (date ? '?date=' + date : ''), undefined, signal),
+            log:              (data)         => request('POST',   '/habits/log', data),
+            definitions:      (signal)       => request('GET',    '/habits/definitions', undefined, signal),
+            createDefinition: (data)         => request('POST',   '/habits/definitions', data),
+            removeDefinition: (id)           => request('DELETE', '/habits/definitions/' + id),
+            settings:         (signal)       => request('GET',    '/habits/settings', undefined, signal),
+            saveSettings:     (updates)      => request('POST',   '/habits/settings', { updates }),
+        },
         OFF: {
             search: (q, page = 1, signal) => fetchOFF(
                 'https://world.openfoodfacts.org/cgi/search.pl' +

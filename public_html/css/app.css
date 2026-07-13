@@ -1476,6 +1476,21 @@ a.food-entry:nth-child(even):active { background: rgba(44,26,14,0.08); }
 }
 .progress-bar-track.stat-bar { grid-area: bar; }
 
+/* Clickable goal-stat variant (steps/sleep → their log pages) */
+a.goal-stat.goal-stat-link {
+    text-decoration: none;
+    cursor: pointer;
+    margin: 0 -4px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border-radius: var(--radius);
+    transition: background 0.15s;
+}
+a.goal-stat.goal-stat-link:active { background: var(--line2); }
+@media (hover: hover) {
+    a.goal-stat.goal-stat-link:hover { background: var(--line2); }
+}
+
 /* ── Dashboard — quick log chips ─────────────────────────── */
 .quick-log-row {
     display: grid;
@@ -1839,6 +1854,135 @@ textarea {
 #scanner-reticle { border-color: var(--accent); }
 #scanner-line     { background: var(--accent); }
 #scanner-torch.torch-on { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+
+/* ── Habits ──────────────────────────────────────────────── */
+.habit-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.habit-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+}
+.habit-item:last-child { border-bottom: none; }
+.habit-icon {
+    width: 22px;
+    font-size: 1.1rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+.habit-name {
+    flex: 1;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--ink);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.habit-item.completed .habit-name { color: var(--accent); }
+.habit-streak {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--faint);
+    min-width: 26px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.habit-minutes {
+    width: 52px !important;
+    flex-shrink: 0;
+    text-align: center;
+    padding: 6px 4px !important;
+    font-size: 0.9375rem !important;
+}
+.habit-goal {
+    font-family: var(--sans);
+    font-size: 0.75rem;
+    color: var(--faint);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.habit-check {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    line-height: 1;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.habit-check.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--paper);
+}
+
+/* Profile: habit configuration */
+.habit-config-list {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+}
+.habit-config-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+}
+.habit-config-item:last-child { border-bottom: none; }
+.habit-config-icon {
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.habit-toggle {
+    width: 20px !important;
+    height: 20px !important;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+    box-shadow: none !important;
+}
+.habit-config-name {
+    flex: 1;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--ink);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.habit-config-goal {
+    width: 60px !important;
+    flex-shrink: 0;
+    text-align: center;
+    padding: 6px 4px !important;
+    font-size: 0.9375rem !important;
+}
+.habit-add-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 4px;
+}
+.habit-add-row input[type="text"]   { flex: 2; }
+.habit-add-row input[type="number"] { flex: 1; min-width: 0; }
 
 /* ── Reduced motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
