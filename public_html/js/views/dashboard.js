@@ -303,9 +303,7 @@ const DashboardView = (() => {
         document.getElementById('ql-custom').addEventListener('click', () => quickLog('custom', ql));
         document.getElementById('ql-scan').addEventListener('click', handleScan);
 
-        if (data.date === todayStr()) {
-            HabitsWidget.mount(document.getElementById('dash-habits'), data.date, viewSignal);
-        }
+        HabitsWidget.mount(document.getElementById('dash-habits'), data.date, viewSignal);
     }
 
     function handleScan() {
